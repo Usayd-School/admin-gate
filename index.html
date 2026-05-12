@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النظام الإداري المتكامل | مدرسة أُسيد بن حضير</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <style>
+        :root {
+            --bg: #f0f4f8; --white: #ffffff; --primary: #1e293b; --accent: #2563eb;
+            --success: #10b981; --border: #e2e8f0; --text-muted: #64748b;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; color: var(--primary); }
+        .navbar { background: var(--primary); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px; }
+        .card { background: white; border-radius: 20px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        .card h3 { margin-top: 0; color: var(--accent); font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 800; margin-bottom: 5px; color: var(--text-muted); }
+        .inp { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Cairo'; font-weight: 700; outline: none; box-sizing: border-box; background: #fcfdfe; }
+        .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .btn-blue { background: var(--accent); }
+        .btn-green { background: var(--success); }
+        .btn-view { background: #64748b; }
+        .table-card { grid-column: span 2; background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: right; }
+        th { background: #f8fafc; padding: 15px; font-size: 12px; border-bottom: 2px solid #edf2f7; color: var(--text-muted); }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 700; }
+        code { background: #f1f5f9; padding: 3px 8px; border-radius: 5px; color: #e11d48; font-family: monospace; font-size: 14px; }
+        .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; }
+        .badge-teacher { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 90%; max-width: 600px; border-radius: 25px; padding: 30px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .close-modal { position: absolute; left: 20px; top: 20px; cursor: pointer; font-size: 24px; font-weight: 900; }
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 35px; border-radius: 50px; font-weight: 700; display: none; z-index: 1100; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+<div id="toast">تم الإجراء بنجاح ✅</div>
+
+<nav class="navbar">
+    <h2>منظومة الإدارة المركزية الكاملة</h2>
+    <span style="font-size: 13px; font-weight: 700;">مدرسة أُسيد بن حضير</span>
+</nav>
+
+<div class="container">
+    <div class="side-panel">
+        <div class="card">
+            <h3>🏫 1. تأسيس الفصول</h3>
+            <div class="form-group">
+                <label>اسم الفصل الجديد</label>
+                <input type="text" id="newCls" class="inp" placeholder="مثال: رابع / ج">
+            </div>
+            <button class="btn btn-blue" onclick="addClass()">إنشاء الفصل</button>
+        </div>
+
+        <div class="card">
+            <h3>👤 2. حسابات المعلمين والمواد</h3>
+            <div class="form-group">
+                <label>اسم المعلم</label>
+                <input type="text" id="tName" class="inp" placeholder="الاسم الرباعي">
+            </div>
+            <div class="form-group">
+                <label>المادة</label>
+                <input type="text" id="tSubj" class="inp" placeholder="مثلاً: لغتي">
+            </div>
+            <button class="btn btn-green" onclick="addTeacher()">إنشاء حساب المعلم 🔑</button>
+        </div>
+
+        <div class="card">
+            <h3>🎓 3. إضافة الطلاب للفصل</h3>
+            <div class="form-group">
+                <label>اختيار الفصل</label>
+                <select id="selClsStd" class="inp"><option disabled selected>اختر فصلاً</option></select>
+            </div>
+            <div class="form-group">
+                <label>اسم الطالب</label>
+                <input type="text" id="stdName" class="inp" placeholder="اسم الطالب">
+            </div>
+            <button class="btn btn-blue" onclick="addStudent()">حفظ الطالب وتوليد حسابه</button>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <div class="card">
+            <h3>🔗 4. إسناد المعلمين للفصول</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                    <label>المعلم والمادة</label>
+                    <select id="selTeacher" class="inp"><option disabled selected>اختر معلماً</option></select>
+                </div>
+                <div class="form-group">
+                    <label>الفصل المستهدف</label>
+                    <select id="selClsAssign" class="inp"><option disabled selected>اختر فصلاً</option></select>
+                </div>
+            </div>
+            <button class="btn btn-blue" onclick="assign()">إتمام عملية الإسناد 🔗</button>
+        </div>
+
+        <div class="card">
+            <h3>📋 كشوفات حسابات أولياء الأمور</h3>
+            <div id="classButtons" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+        </div>
+
+        <div class="table-card">
+            <div style="padding:15px; font-weight:900; background:#f8fafc;">سجل الإسناد العام (سحابي 🌐)</div>
+            <table id="assignTable">
+                <thead>
+                    <tr>
+                        <th>المعلم</th>
+                        <th>المادة</th>
+                        <th>الفصل</th>
+                        <th>حساب المعلم</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="pwdModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModal()">×</span>
+        <h3 id="modalTitle">حسابات الطلاب</h3>
+        <table>
+            <thead>
+                <tr><th>الطالب</th><th>اسم المستخدم</th><th>كلمة السر</th></tr>
+            </thead>
+            <tbody id="modalBody"></tbody>
+        </table>
+        <button class="btn btn-view" style="margin-top:20px" onclick="window.print()">طباعة الكشوفات 🖨️</button>
+    </div>
+</div>
+
+<script>
+    // إعدادات Firebase الخاصة بمشروعك
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIW17B6y6sG_bdUFqF7FWoVIY9ynXv1B4",
+        authDomain: "myschoolproject-4ad92.firebaseapp.com",
+        databaseURL: "https://myschoolproject-4ad92-default-rtdb.firebaseio.com",
+        projectId: "myschoolproject-4ad92",
+    };
+    
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const database = firebase.database();
+
+    function notify(m) {
+        const t = document.getElementById('toast');
+        t.innerText = m; t.style.display = 'block';
+        setTimeout(() => t.style.display='none', 2500);
+    }
+
+    // 1. إنشاء الفصل
+    function addClass() {
+        const name = document.getElementById('newCls').value;
+        if(!name) return;
+        database.ref('classes/' + name).set({ name: name }).then(() => {
+            document.getElementById('newCls').value = "";
+            notify("تم إنشاء الفصل وحفظه سحابياً ✅");
+        });
+    }
+
+    // 2. إنشاء المعلم
+    function addTeacher() {
+        const name = document.getElementById('tName').value;
+        const subj = document.getElementById('tSubj').value;
+        if(!name || !subj) return;
+        
+        const user = "t_" + Math.random().toString(36).substring(7);
+        const pass = Math.floor(1000 + Math.random() * 9000);
+        
+        database.ref('teachers').push({ name, subj, user, pass }).then(() => {
+            document.getElementById('tName').value = "";
+            document.getElementById('tSubj').value = "";
+            notify(`تم إنشاء حساب المعلم: ${name} ✅`);
+        });
+    }
+
+    // 3. إضافة الطالب
+    function addStudent() {
+        const cls = document.getElementById('selClsStd').value;
+        const name = document.getElementById('stdName').value;
+        if(!cls || !name) return;
+
+        const user = "p_" + Math.random().toString(36).substring(7);
+        const pass = Math.floor(1000 + Math.random() * 9000);
+
+        database.ref('students/' + cls).push({ name, user, pass }).then(() => {
+            document.getElementById('stdName').value = "";
+            notify(`تم حفظ الطالب ${name} وتوليد حسابه ✅`);
+        });
+    }
+
+    // 4. إسناد المعلم للفصل
+    function assign() {
+        const tKey = document.getElementById('selTeacher').value;
+        const cls = document.getElementById('selClsAssign').value;
+        if(!tKey || !cls) return;
+
+        database.ref('teachers/' + tKey).once('value', snap => {
+            const t = snap.val();
+            database.ref('assignments').push({
+                teacherName: t.name,
+                subject: t.subj,
+                className: cls,
+                teacherUser: t.user,
+                teacherPass: t.pass
+            }).then(() => {
+                notify("تمت عملية الإسناد بنجاح 🔗");
+            });
+        });
+    }
+
+    // --- مراقبة البيانات لتحديث القوائم والجدول تلقائياً ---
+
+    // تحديث قوائم الفصول
+    database.ref('classes').on('value', snapshot => {
+        const classes = snapshot.val();
+        ['selClsStd', 'selClsAssign'].forEach(id => {
+            const sel = document.getElementById(id);
+            sel.innerHTML = '<option disabled selected>اختر فصلاً</option>';
+            for(let key in classes) {
+                let opt = document.createElement('option');
+                opt.value = key; opt.text = key;
+                sel.add(opt);
+            }
+        });
+        renderClassButtons(classes);
+    });
+
+    // تحديث قائمة المعلمين
+    database.ref('teachers').on('value', snapshot => {
+        const teachers = snapshot.val();
+        const sel = document.getElementById('selTeacher');
+        sel.innerHTML = '<option disabled selected>اختر معلماً</option>';
+        for(let key in teachers) {
+            let opt = document.createElement('option');
+            opt.value = key; opt.text = `${teachers[key].name} (${teachers[key].subj})`;
+            sel.add(opt);
+        }
+    });
+
+    // تحديث جدول الإسناد
+    database.ref('assignments').on('value', snap => {
+        const tbody = document.getElementById('assignTable').querySelector('tbody');
+        tbody.innerHTML = "";
+        const data = snap.val();
+        for(let key in data) {
+            const a = data[key];
+            const row = tbody.insertRow();
+            row.innerHTML = `
+                <td>${a.teacherName}</td>
+                <td><span class="badge badge-teacher">${a.subject}</span></td>
+                <td>${a.className}</td>
+                <td><code>${a.teacherUser} / ${a.teacherPass}</code></td>
+            `;
+        }
+    });
+
+    function renderClassButtons(classes) {
+        const container = document.getElementById('classButtons');
+        container.innerHTML = "";
+        for (let cls in classes) {
+            const btn = document.createElement('button');
+            btn.className = "btn btn-view"; btn.style.width = "auto";
+            btn.innerText = `كشف ${cls}`;
+            btn.onclick = () => openModal(cls);
+            container.appendChild(btn);
+        }
+    }
+
+    function openModal(cls) {
+        document.getElementById('modalTitle').innerText = `حسابات طلاب فصل: ${cls}`;
+        database.ref('students/' + cls).once('value', snapshot => {
+            const students = snapshot.val();
+            const tbody = document.getElementById('modalBody');
+            tbody.innerHTML = "";
+            for(let key in students) {
+                const s = students[key];
+                const row = tbody.insertRow();
+                row.innerHTML = `<td>${s.name}</td><td><code>${s.user}</code></td><td><code>${s.pass}</code></td>`;
+            }
+            document.getElementById('pwdModal').style.display = 'flex';
+        });
+    }
+
+    function closeModal() { document.getElementById('pwdModal').style.display = 'none'; }
+</script>
+</body>
+</html>
