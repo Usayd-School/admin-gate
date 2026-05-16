@@ -3,29 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام الإداري المتكامل | مدرسة أُسيد بن حضير</title>
+    <title>النظام الإداري المطور | مدرسة أُسيد بن حضير</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     
+    <!-- تحميل مكتبات الفايربيس ومكتبة قراءة كشوفات الإكسل سحابياً -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
         :root {
             --bg: #f0f4f8; --white: #ffffff; --primary: #1e293b; --accent: #2563eb;
-            --success: #10b981; --border: #e2e8f0; --text-muted: #64748b;
+            --success: #10b981; --danger: #ef4444; --border: #e2e8f0; --text-muted: #64748b;
         }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; color: var(--primary); }
+        
+        /* شاشة بوابة الدخول */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: white; width: 100%; max-width: 400px; padding: 40px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); text-align: center; }
+        .login-card h2 { margin-top: 0; margin-bottom: 5px; font-size: 22px; color: var(--primary); }
+        .login-card p { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; font-weight: 600; }
+
+        /* إخفاء المحتوى الرئيسي حتى يتم تسجيل الدخول */
+        .main-wrapper { display: none; }
+
         .navbar { background: var(--primary); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .navbar-brand { display: flex; flex-direction: column; }
+        .navbar-brand h2 { margin: 0; font-size: 20px; }
+        .navbar-brand span { font-size: 13px; font-weight: 700; opacity: 0.8; margin-top: 2px; }
+        
+        .btn-monitoring { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: white; text-decoration: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 14px; transition: 0.3s; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+        .btn-monitoring:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .btn-logout { background: transparent; color: #f43f5e; border: 1px solid #f43f5e; padding: 8px 15px; border-radius: 10px; font-family: 'Cairo'; font-weight: 700; cursor: pointer; font-size: 12px; margin-right: 10px; transition: 0.3s; }
+        .btn-logout:hover { background: #f43f5e; color: white; }
+
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px; }
         .card { background: white; border-radius: 20px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
         .card h3 { margin-top: 0; color: var(--accent); font-size: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: 800; margin-bottom: 5px; color: var(--text-muted); }
         .inp { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Cairo'; font-weight: 700; outline: none; box-sizing: border-box; background: #fcfdfe; }
+        
+        .excel-upload-label { display: block; border: 2px dashed var(--accent); border-radius: 12px; padding: 10px; text-align: center; background: #eff6ff; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 12px; margin-top: 8px; }
+        .excel-upload-label:hover { background: #dbeafe; }
+        .excel-file-input { display: none; }
+
         .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 5px; }
         .btn-blue { background: var(--accent); }
         .btn-green { background: var(--success); }
         .btn-view { background: #64748b; }
+        .btn-delete { background: var(--danger); padding: 4px 10px; font-size: 11px; border-radius: 8px; width: auto; margin: 0; cursor: pointer; }
+        .btn-delete-inline { background: var(--danger); color: white; border: none; border-radius: 12px; padding: 0 15px; font-weight: 700; cursor: pointer; font-family: 'Cairo'; font-size: 13px; transition: 0.3s; }
+        .btn-delete-inline:hover { background: #b91c1c; }
+        .btn-edit { background: #f59e0b; padding: 4px 10px; font-size: 11px; border-radius: 8px; width: auto; margin: 0; cursor: pointer; color: white; border: none; font-weight: 800; font-family: 'Cairo'; }
+        
+        .btn-cls-group { display: inline-flex; align-items: center; background: #64748b; border-radius: 12px; overflow: hidden; margin-bottom: 5px; }
+        .btn-cls-group button { background: transparent; border: none; color: white; font-weight: 800; padding: 12px 15px; cursor: pointer; }
+        .btn-cls-group .delete-cls-btn { background: rgba(255,255,255,0.15); font-weight: 900; border-right: 1px solid rgba(255,255,255,0.2); }
+        .btn-cls-group .delete-cls-btn:hover { background: var(--danger); }
+        
         .table-card { grid-column: span 2; background: white; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; text-align: right; }
         th { background: #f8fafc; padding: 15px; font-size: 12px; border-bottom: 2px solid #edf2f7; color: var(--text-muted); }
@@ -33,8 +69,9 @@
         code { background: #f1f5f9; padding: 3px 8px; border-radius: 5px; color: #e11d48; font-family: monospace; font-size: 14px; }
         .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; }
         .badge-teacher { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+        
         .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 90%; max-width: 600px; border-radius: 25px; padding: 30px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .modal-content { background: white; width: 90%; max-width: 750px; border-radius: 25px; padding: 30px; max-height: 80vh; overflow-y: auto; position: relative; }
         .close-modal { position: absolute; left: 20px; top: 20px; cursor: pointer; font-size: 24px; font-weight: 900; }
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 35px; border-radius: 50px; font-weight: 700; display: none; z-index: 1100; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
     </style>
@@ -43,83 +80,121 @@
 
 <div id="toast">تم الإجراء بنجاح ✅</div>
 
-<nav class="navbar">
-    <h2>منظومة الإدارة المركزية الكاملة</h2>
-    <span style="font-size: 13px; font-weight: 700;">مدرسة أُسيد بن حضير</span>
-</nav>
-
-<div class="container">
-    <div class="side-panel">
-        <div class="card">
-            <h3>🏫 1. تأسيس الفصول</h3>
-            <div class="form-group">
-                <label>اسم الفصل الجديد</label>
-                <input type="text" id="newCls" class="inp" placeholder="مثال: رابع / ج">
-            </div>
-            <button class="btn btn-blue" onclick="addClass()">إنشاء الفصل</button>
+<!-- واجهة بوابة الدخول وب البداية -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <h2>بوابة الدخول المركزية</h2>
+        <p>مدرسة أُسيد بن حضير | لوحة التحكم الإدارية</p>
+        <div class="form-group" style="text-align: right;">
+            <label>اسم المستخدم</label>
+            <input type="text" id="loginUser" class="inp" placeholder="أدخل اسم المستخدم">
         </div>
-
-        <div class="card">
-            <h3>👤 2. حسابات المعلمين والمواد</h3>
-            <div class="form-group">
-                <label>اسم المعلم</label>
-                <input type="text" id="tName" class="inp" placeholder="الاسم الرباعي">
-            </div>
-            <div class="form-group">
-                <label>المادة</label>
-                <input type="text" id="tSubj" class="inp" placeholder="مثلاً: لغتي">
-            </div>
-            <button class="btn btn-green" onclick="addTeacher()">إنشاء حساب المعلم 🔑</button>
+        <div class="form-group" style="text-align: right;">
+            <label>كلمة المرور</label>
+            <input type="password" id="loginPass" class="inp" placeholder="أدخل كلمة المرور">
         </div>
-
-        <div class="card">
-            <h3>🎓 3. إضافة الطلاب للفصل</h3>
-            <div class="form-group">
-                <label>اختيار الفصل</label>
-                <select id="selClsStd" class="inp"><option disabled selected>اختر فصلاً</option></select>
-            </div>
-            <div class="form-group">
-                <label>اسم الطالب</label>
-                <input type="text" id="stdName" class="inp" placeholder="اسم الطالب">
-            </div>
-            <button class="btn btn-blue" onclick="addStudent()">حفظ الطالب وتوليد حسابه</button>
-        </div>
+        <button class="btn btn-blue" style="margin-top: 15px;" onclick="checkLogin()">تسجيل الدخول 🔑</button>
     </div>
+</div>
 
-    <div class="main-panel">
-        <div class="card">
-            <h3>🔗 4. إسناد المعلمين للفصول</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+<!-- حاوية المحتوى الإداري بالكامل -->
+<div id="mainWrapper" class="main-wrapper">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <h2>منظومة الإدارة المركزية الكاملة</h2>
+            <span>مدرسة أُسيد بن حضير</span>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <a href="https://usayd-school.github.io/Management-Monitoring-Platform/" target="_blank" class="btn-monitoring">
+                الدخول إلى نظام المتابعة 🔗
+            </a>
+            <button class="btn-logout" onclick="logout()">خروج 🚪</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="side-panel">
+            <div class="card">
+                <h3>🏫 1. تأسيس الفصول</h3>
                 <div class="form-group">
-                    <label>المعلم والمادة</label>
-                    <select id="selTeacher" class="inp"><option disabled selected>اختر معلماً</option></select>
+                    <label>اسم الفصل الجديد</label>
+                    <input type="text" id="newCls" class="inp" placeholder="مثال: رابع / ج">
                 </div>
-                <div class="form-group">
-                    <label>الفصل المستهدف</label>
-                    <select id="selClsAssign" class="inp"><option disabled selected>اختر فصلاً</option></select>
-                </div>
+                <button class="btn btn-blue" onclick="addClass()">إنشاء الفصل</button>
             </div>
-            <button class="btn btn-blue" onclick="assign()">إتمام عملية الإسناد 🔗</button>
+
+            <div class="card">
+                <h3>👤 2. حسابات المعلمين والمواد</h3>
+                <div class="form-group">
+                    <label>اسم المعلم</label>
+                    <input type="text" id="tName" class="inp" placeholder="الاسم الرباعي">
+                </div>
+                <div class="form-group">
+                    <label>المادة</label>
+                    <input type="text" id="tSubj" class="inp" placeholder="مثلاً: لغتي">
+                </div>
+                <button class="btn btn-green" onclick="addTeacher()">إنشاء حساب المعلم 🔑</button>
+                
+                <label class="excel-upload-label" for="excelTeacher">📂 استيراد كشف المعلمين من ملف Excel</label>
+                <input type="file" id="excelTeacher" class="excel-file-input" accept=".xlsx, .xls" onchange="importTeachersExcel(this)">
+            </div>
+
+            <div class="card">
+                <h3>🎓 3. إضافة الطلاب للفصل</h3>
+                <div class="form-group">
+                    <label>اختيار الفصل المستهدف</label>
+                    <select id="selClsStd" class="inp"><option disabled selected>اختر فصلاً</option></select>
+                </div>
+                <div class="form-group">
+                    <label>اسم الطالب</label>
+                    <input type="text" id="stdName" class="inp" placeholder="اسم الطالب الكلي">
+                </div>
+                <button class="btn btn-blue" onclick="addStudent()">حفظ الطالب وتوليد حسابه</button>
+                
+                <label class="excel-upload-label" for="excelStudent">📂 استيراد طلاب الفصل من ملف Excel</label>
+                <input type="file" id="excelStudent" class="excel-file-input" accept=".xlsx, .xls" onchange="importStudentsExcel(this)">
+            </div>
         </div>
 
-        <div class="card">
-            <h3>📋 كشوفات حسابات أولياء الأمور</h3>
-            <div id="classButtons" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
-        </div>
+        <div class="main-panel">
+            <div class="card">
+                <h3>🔗 4. إسناد المعلمين للفصول</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <div class="form-group">
+                        <label>المعلم والمادة</label>
+                        <div style="display: flex; gap: 8px;">
+                            <select id="selTeacher" class="inp"><option disabled selected>اختر معلماً</option></select>
+                            <button class="btn-delete-inline" onclick="deleteTeacherFromSelect()" title="حذف المعلم المحدد نهائياً من النظام">حذف 🗑️</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>الفصل المستهدف</label>
+                        <select id="selClsAssign" class="inp"><option disabled selected>اختر فصلاً</option></select>
+                    </div>
+                </div>
+                <button class="btn btn-blue" onclick="assign()">إتمام عملية الإسناد 🔗</button>
+            </div>
 
-        <div class="table-card">
-            <div style="padding:15px; font-weight:900; background:#f8fafc;">سجل الإسناد العام (سحابي 🌐)</div>
-            <table id="assignTable">
-                <thead>
-                    <tr>
-                        <th>المعلم</th>
-                        <th>المادة</th>
-                        <th>الفصل</th>
-                        <th>حساب المعلم</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="card">
+                <h3>📋 كشوفات حسابات أولياء الأمور والطلاب</h3>
+                <div id="classButtons" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+            </div>
+
+            <div class="table-card">
+                <div style="padding:15px; font-weight:900; background:#f8fafc;">سجل الإسناد العام وسحابة ربط المعلمين 🌐</div>
+                <table id="assignTable">
+                    <thead>
+                        <tr>
+                            <th>المعلم</th>
+                            <th>المادة</th>
+                            <th>الفصل</th>
+                            <th>حساب المعلم الحالي</th>
+                            <th>إجراءات الإدارة</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -130,16 +205,55 @@
         <h3 id="modalTitle">حسابات الطلاب</h3>
         <table>
             <thead>
-                <tr><th>الطالب</th><th>اسم المستخدم</th><th>كلمة السر</th></tr>
+                <tr><th>الطالب</th><th>اسم المستخدم</th><th>كلمة السر (الجوال)</th><th>خيارات التعديل والحذف</th></tr>
             </thead>
             <tbody id="modalBody"></tbody>
         </table>
-        <button class="btn btn-view" style="margin-top:20px" onclick="window.print()">طباعة الكشوفات 🖨️</button>
+        <button class="btn btn-view" style="margin-top:20px" onclick="window.print()">طباعة الكشوفات السحابية 🖨️</button>
     </div>
 </div>
 
 <script>
-    // إعدادات Firebase الخاصة بمشروعك
+    // إعدادات بوابة الدخول الافتراضية
+    const ADMIN_USER = "admin";
+    const ADMIN_PASS = "1234";
+
+    // التحقق من الجلسة المحفوظة عند تحميل الصفحة فوراً
+    window.onload = function() {
+        if (localStorage.getItem("isLoggedIn") === "true") {
+            showSystem();
+        }
+    }
+
+    function checkLogin() {
+        const u = document.getElementById("loginUser").value.trim();
+        const p = document.getElementById("loginPass").value.trim();
+
+        if (u === ADMIN_USER && p === ADMIN_PASS) {
+            localStorage.setItem("isLoggedIn", "true");
+            showSystem();
+            notify("مرحباً بك! تم تسجيل الدخول بنجاح 👋");
+        } else {
+            alert("خطأ: اسم المستخدم أو كلمة المرور غير صحيحة ❌");
+        }
+    }
+
+    function showSystem() {
+        document.getElementById("loginOverlay").style.display = "none";
+        document.getElementById("mainWrapper").style.display = "block";
+    }
+
+    function logout() {
+        if(confirm("هل أنت متأكد من تسجيل الخروج؟")) {
+            localStorage.removeItem("isLoggedIn");
+            document.getElementById("loginUser").value = "";
+            document.getElementById("loginPass").value = "";
+            document.getElementById("mainWrapper").style.display = "none";
+            document.getElementById("loginOverlay").style.display = "flex";
+        }
+    }
+
+    // إعدادات قاعدة بيانات الفايربيس
     const firebaseConfig = {
         apiKey: "AIzaSyCIW17B6y6sG_bdUFqF7FWoVIY9ynXv1B4",
         authDomain: "myschoolproject-4ad92.firebaseapp.com",
@@ -160,7 +274,7 @@
 
     // 1. إنشاء الفصل
     function addClass() {
-        const name = document.getElementById('newCls').value;
+        const name = document.getElementById('newCls').value.trim();
         if(!name) return;
         database.ref('classes/' + name).set({ name: name }).then(() => {
             document.getElementById('newCls').value = "";
@@ -168,10 +282,18 @@
         });
     }
 
-    // 2. إنشاء المعلم
+    function deleteClass(clsName) {
+        if(confirm(`هل أنت متأكد من حذف فصل (${clsName}) بالكامل مع كشوفات الحسابات المرتبطة به؟`)) {
+            database.ref('classes/' + clsName).remove();
+            database.ref('students/' + clsName).remove();
+            notify("تم حذف الفصل وطلابه بنجاح 🗑️");
+        }
+    }
+
+    // 2. إنشاء حساب المعلم فردياً
     function addTeacher() {
-        const name = document.getElementById('tName').value;
-        const subj = document.getElementById('tSubj').value;
+        const name = document.getElementById('tName').value.trim();
+        const subj = document.getElementById('tSubj').value.trim();
         if(!name || !subj) return;
         
         const user = "t_" + Math.random().toString(36).substring(7);
@@ -180,48 +302,198 @@
         database.ref('teachers').push({ name, subj, user, pass }).then(() => {
             document.getElementById('tName').value = "";
             document.getElementById('tSubj').value = "";
-            notify(`تم إنشاء حساب المعلم: ${name} ✅`);
+            notify(`تم تثبيت حساب المعلم: ${name} ✅`);
         });
     }
 
-    // 3. إضافة الطالب
+    // حذف المعلم مباشرة من شريط القائمة المنسدلة في الإسناد
+    function deleteTeacherFromSelect() {
+        const tKey = document.getElementById('selTeacher').value;
+        if(!tKey || tKey.includes("اختر")) {
+            alert("الرجاء اختيار المعلم المراد حذفه من القائمة أولاً ⚠️");
+            return;
+        }
+
+        database.ref('teachers/' + tKey).once('value', snap => {
+            const t = snap.val();
+            if(!t) return;
+            
+            if(confirm(`هل أنت متأكد من حذف حساب المعلم (${t.name}) نهائياً؟ سيتم إلغاء جميع فصوله المسندة إليه أيضاً.`)) {
+                database.ref('teachers/' + tKey).remove().then(() => {
+                    database.ref('assignments').once('value', assignSnap => {
+                        const assignments = assignSnap.val();
+                        for(let key in assignments) {
+                            if(assignments[key].teacherUser === t.user || assignments[key].teacherMainKey === tKey) {
+                                database.ref('assignments/' + key).remove();
+                            }
+                        }
+                    });
+                    notify(`تم حذف المعلم (${t.name}) وإلغاء فصوله بنجاح 🗑️`);
+                });
+            }
+        });
+    }
+
+    // استيراد كشف المعلمين من ملف Excel
+    function importTeachersExcel(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.SheetNames[0];
+            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+            
+            let count = 0;
+            rows.forEach(row => {
+                const name = row['الاسم'] || row['اسم المعلم'] || row['الاسم الرباعي'];
+                const subj = row['المادة'] || row['التخصص'];
+                const phone = row['الجوال'] || row['رقم الجوال'] || row['الهاتف'];
+                
+                if (name && subj) {
+                    const user = "t_" + Math.random().toString(36).substring(7);
+                    const pass = phone ? phone.toString().trim() : Math.floor(1000 + Math.random() * 9000);
+                    database.ref('teachers').push({ name, subj, user, pass });
+                    count++;
+                }
+            });
+            notify(`تم استيراد ${count} معلم بنجاح وتعيين الجوال ككلمة مرور 📂`);
+            input.value = '';
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // 3. إضافة طالب فردي
     function addStudent() {
         const cls = document.getElementById('selClsStd').value;
-        const name = document.getElementById('stdName').value;
-        if(!cls || !name) return;
+        const name = document.getElementById('stdName').value.trim();
+        if(!cls || !name) { alert("الرجاء اختيار فصل وكتابة اسم الطالب"); return; }
 
         const user = "p_" + Math.random().toString(36).substring(7);
         const pass = Math.floor(1000 + Math.random() * 9000);
 
         database.ref('students/' + cls).push({ name, user, pass }).then(() => {
             document.getElementById('stdName').value = "";
-            notify(`تم حفظ الطالب ${name} وتوليد حسابه ✅`);
+            notify(`تم حفظ الطالب ${name} وتوليد حسابه بنجاح ✅`);
         });
+    }
+
+    // استيراد كشف طلاب فصل محدد عن طريق Excel
+    function importStudentsExcel(input) {
+        const cls = document.getElementById('selClsStd').value;
+        if(!cls || cls.includes("اختر")) {
+            alert("تنبيه: يرجى تحديد الفصل المستهدف من القائمة أولاً قبل رفع ملف الـ Excel للطلاب!");
+            input.value = ''; return;
+        }
+        
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.SheetNames[0];
+            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+            
+            let count = 0;
+            rows.forEach(row => {
+                const name = row['الاسم'] || row['اسم الطالب'] || row['الطالب'];
+                const phone = row['الجوال'] || row['رقم الجوال'] || row['جوال الأمر'];
+                
+                if (name) {
+                    const user = "p_" + Math.random().toString(36).substring(7);
+                    const pass = phone ? phone.toString().trim() : Math.floor(1000 + Math.random() * 9000);
+                    database.ref('students/' + cls).push({ name, user, pass });
+                    count++;
+                }
+            });
+            notify(`نجاح: تم إدخال ${count} طالب في صف ${cls} وجوالاتهم هي الباسوورد 🚀`);
+            input.value = '';
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // تعديل بيانات الدخول سحابياً للمعلم أو الطالب يدوياً
+    function editCredentials(type, pathOrCls, key, currentFields) {
+        const newUser = prompt("أدخل اسم المستخدم الجديد:", currentFields.user);
+        if (newUser === null) return;
+        const newPass = prompt("أدخل كلمة المرور (رقم السري) الجديد:", currentFields.pass);
+        if (newPass === null) return;
+        
+        if(newUser.trim() === "" || newPass.toString().trim() === "") {
+            alert("الحقول فارغة، لا يمكن ترك البيانات خالية!"); return;
+        }
+
+        let refPath = type === 'student' ? `students/${pathOrCls}/${key}` : `teachers/${key}`;
+        
+        database.ref(refPath).update({
+            user: newUser.trim(),
+            pass: newPass.toString().trim()
+        }).then(() => {
+            if (type === 'teacher') {
+                updateLinkedAssignments(currentFields.user, newUser.trim(), newPass.toString().trim());
+            }
+            notify("تم تعديل اسم المستخدم وكلمة السر بنجاح 📝🔥");
+            if (type === 'student') openModal(pathOrCls);
+        });
+    }
+
+    function updateLinkedAssignments(oldUser, newUser, newPass) {
+        database.ref('assignments').once('value', snap => {
+            const data = snap.val();
+            for(let key in data) {
+                if(data[key].teacherUser === oldUser) {
+                    database.ref(`assignments/${key}`).update({
+                        teacherUser: newUser,
+                        teacherPass: newPass
+                    });
+                }
+            }
+        });
+    }
+
+    function deleteStudent(cls, key, stdName) {
+        if(confirm(`هل أنت متأكد من حذف حساب الطالب: ${stdName}؟`)) {
+            database.ref(`students/${cls}/${key}`).remove().then(() => {
+                notify("تم حذف حساب الطالب بنجاح 🗑️");
+                openModal(cls);
+            });
+        }
     }
 
     // 4. إسناد المعلم للفصل
     function assign() {
         const tKey = document.getElementById('selTeacher').value;
         const cls = document.getElementById('selClsAssign').value;
-        if(!tKey || !cls) return;
+        if(!tKey || tKey.includes("اختر") || !cls || cls.includes("اختر")) return;
 
         database.ref('teachers/' + tKey).once('value', snap => {
             const t = snap.val();
+            if(!t) return;
             database.ref('assignments').push({
                 teacherName: t.name,
                 subject: t.subj,
                 className: cls,
                 teacherUser: t.user,
-                teacherPass: t.pass
+                teacherPass: t.pass,
+                teacherMainKey: tKey
             }).then(() => {
                 notify("تمت عملية الإسناد بنجاح 🔗");
             });
         });
     }
 
-    // --- مراقبة البيانات لتحديث القوائم والجدول تلقائياً ---
+    function deleteAssignment(key) {
+        if(confirm("هل أنت متأكد من إلغاء هذا الإسناد؟")) {
+            database.ref('assignments/' + key).remove().then(() => {
+                notify("تم إلغاء الإسناد بنجاح 🗑️");
+            });
+        }
+    }
 
-    // تحديث قوائم الفصول
+    // --- تحديث البيانات الفوري التلقائي (Realtime) ---
+
     database.ref('classes').on('value', snapshot => {
         const classes = snapshot.val();
         ['selClsStd', 'selClsAssign'].forEach(id => {
@@ -236,7 +508,6 @@
         renderClassButtons(classes);
     });
 
-    // تحديث قائمة المعلمين
     database.ref('teachers').on('value', snapshot => {
         const teachers = snapshot.val();
         const sel = document.getElementById('selTeacher');
@@ -248,7 +519,6 @@
         }
     });
 
-    // تحديث جدول الإسناد
     database.ref('assignments').on('value', snap => {
         const tbody = document.getElementById('assignTable').querySelector('tbody');
         tbody.innerHTML = "";
@@ -261,6 +531,10 @@
                 <td><span class="badge badge-teacher">${a.subject}</span></td>
                 <td>${a.className}</td>
                 <td><code>${a.teacherUser} / ${a.teacherPass}</code></td>
+                <td>
+                    <button class="btn-edit" onclick="editCredentials('teacher', '', '${a.teacherMainKey || ''}', {user:'${a.teacherUser}', pass:'${a.teacherPass}'})">تعديل 📝</button>
+                    <button class="btn btn-delete" onclick="deleteAssignment('${key}')">إلغاء الإسناد 🗑️</button>
+                </td>
             `;
         }
     });
@@ -269,11 +543,13 @@
         const container = document.getElementById('classButtons');
         container.innerHTML = "";
         for (let cls in classes) {
-            const btn = document.createElement('button');
-            btn.className = "btn btn-view"; btn.style.width = "auto";
-            btn.innerText = `كشف ${cls}`;
-            btn.onclick = () => openModal(cls);
-            container.appendChild(btn);
+            const group = document.createElement('div');
+            group.className = "btn-cls-group";
+            group.innerHTML = `
+                <button onclick="openModal('${cls}')">كشف ${cls}</button>
+                <button class="delete-cls-btn" onclick="deleteClass('${cls}')" title="حذف الفصل بالكامل">×</button>
+            `;
+            container.appendChild(group);
         }
     }
 
@@ -286,7 +562,15 @@
             for(let key in students) {
                 const s = students[key];
                 const row = tbody.insertRow();
-                row.innerHTML = `<td>${s.name}</td><td><code>${s.user}</code></td><td><code>${s.pass}</code></td>`;
+                row.innerHTML = `
+                    <td>${s.name}</td>
+                    <td><code>${s.user}</code></td>
+                    <td><code>${s.pass}</code></td>
+                    <td>
+                        <button class="btn-edit" onclick="editCredentials('student', '${cls}', '${key}', {user:'${s.user}', pass:'${s.pass}'})">تعديل 📝</button>
+                        <button class="btn btn-delete" onclick="deleteStudent('${cls}', '${key}', '${s.name}')">حذف 🗑️</button>
+                    </td>
+                `;
             }
             document.getElementById('pwdModal').style.display = 'flex';
         });
