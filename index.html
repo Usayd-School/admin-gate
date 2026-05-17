@@ -44,6 +44,11 @@
         .form-group label { display: block; font-size: 12px; font-weight: 800; margin-bottom: 5px; color: var(--text-muted); }
         .inp { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-family: 'Cairo'; font-weight: 700; outline: none; box-sizing: border-box; background: #fcfdfe; }
         
+        /* نمط صندوق اختيار الفصول المتعددة */
+        .classes-checkbox-container { border: 1px solid var(--border); border-radius: 12px; padding: 12px; background: #fcfdfe; max-height: 130px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+        .class-checkbox-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .class-checkbox-item input { width: 16px; height: 16px; cursor: pointer; }
+
         .excel-upload-label { display: block; border: 2px dashed var(--accent); border-radius: 12px; padding: 10px; text-align: center; background: #eff6ff; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 12px; margin-top: 8px; }
         .excel-upload-label:hover { background: #dbeafe; }
         .excel-file-input { display: none; }
@@ -158,8 +163,8 @@
 
         <div class="main-panel">
             <div class="card">
-                <h3>🔗 4. إسناد المعلمين للفصول</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                <h3>🔗 4. إسناد المعلمين للفصول (يدعم فصول متعددة)</h3>
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; margin-bottom: 10px;">
                     <div class="form-group">
                         <label>المعلم والمادة</label>
                         <div style="display: flex; gap: 8px;">
@@ -168,11 +173,14 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>الفصل المستهدف</label>
-                        <select id="selClsAssign" class="inp"><option disabled selected>اختر فصلاً</option></select>
+                        <label>الفصول المستهدفة (اختر فصلاً أو أكثر)</label>
+                        <!-- استبدال السيلكت بصناديق اختيار متعددة -->
+                        <div id="classesCheckboxList" class="classes-checkbox-container">
+                            <span style="color: var(--text-muted); font-size: 11px; padding: 5px;">يرجى تأسيس فصول أولاً...</span>
+                        </div>
                     </div>
                 </div>
-                <button class="btn btn-blue" onclick="assign()">إتمام عملية الإسناد 🔗</button>
+                <button class="btn btn-blue" onclick="assign()">إتمام عملية الإسناد للفصول المحددة 🔗</button>
             </div>
 
             <div class="card">
@@ -462,24 +470,46 @@
         }
     }
 
-    // 4. إسناد المعلم للفصل
+    // 4. ميزة إسناد المعلم لعدة فصول في آن واحد
     function assign() {
         const tKey = document.getElementById('selTeacher').value;
-        const cls = document.getElementById('selClsAssign').value;
-        if(!tKey || tKey.includes("اختر") || !cls || cls.includes("اختر")) return;
+        if(!tKey || tKey.includes("اختر")) {
+            alert("الرجاء اختيار معلم أولاً ⚠️");
+            return;
+        }
+
+        // جلب كافة الفصول المحددة (Checked) من الـ Checkboxes
+        const checkedBoxes = document.querySelectorAll('.cls-assign-checkbox:checked');
+        if(checkedBoxes.length === 0) {
+            alert("الرجاء اختيار فصل واحد على الأقل لإتمام عملية الإسناد ⚠️");
+            return;
+        }
 
         database.ref('teachers/' + tKey).once('value', snap => {
             const t = snap.val();
             if(!t) return;
-            database.ref('assignments').push({
-                teacherName: t.name,
-                subject: t.subj,
-                className: cls,
-                teacherUser: t.user,
-                teacherPass: t.pass,
-                teacherMainKey: tKey
-            }).then(() => {
-                notify("تمت عملية الإسناد بنجاح 🔗");
+            
+            let promises = [];
+            
+            // تكرار على كل فصل تم تحديده وإضافته بقاعدة البيانات بشكل منفصل
+            checkedBoxes.forEach(box => {
+                const clsName = box.value;
+                let ref = database.ref('assignments').push();
+                let p = ref.set({
+                    teacherName: t.name,
+                    subject: t.subj,
+                    className: clsName,
+                    teacherUser: t.user,
+                    teacherPass: t.pass,
+                    teacherMainKey: tKey
+                });
+                promises.push(p);
+            });
+
+            Promise.all(promises).then(() => {
+                // إلغاء تحديد مربعات الاختيار بعد النجاح لراحة المستخدم
+                checkedBoxes.forEach(box => box.checked = false);
+                notify(`تم إسناد المعلم لـ (${checkedBoxes.length}) فصول بنجاح 🔗🎉`);
             });
         });
     }
@@ -496,15 +526,32 @@
 
     database.ref('classes').on('value', snapshot => {
         const classes = snapshot.val();
-        ['selClsStd', 'selClsAssign'].forEach(id => {
-            const sel = document.getElementById(id);
-            sel.innerHTML = '<option disabled selected>اختر فصلاً</option>';
-            for(let key in classes) {
-                let opt = document.createElement('option');
-                opt.value = key; opt.text = key;
-                sel.add(opt);
-            }
-        });
+        
+        // 1. تحديث قائمة اختيار الفصل الأحادي لإضافة الطلاب
+        const selClsStd = document.getElementById('selClsStd');
+        selClsStd.innerHTML = '<option disabled selected>اختر فصلاً</option>';
+        for(let key in classes) {
+            let opt = document.createElement('option');
+            opt.value = key; opt.text = key;
+            selClsStd.add(opt);
+        }
+
+        // 2. تحديث قائمة الـ Checkboxes المتعددة للإسناد الإداري
+        const checkboxContainer = document.getElementById('classesCheckboxList');
+        checkboxContainer.innerHTML = "";
+        
+        let hasClasses = false;
+        for(let key in classes) {
+            hasClasses = true;
+            const label = document.createElement('label');
+            label.className = "class-checkbox-item";
+            label.innerHTML = `<input type="checkbox" class="cls-assign-checkbox" value="${key}"> ${key}`;
+            checkboxContainer.appendChild(label);
+        }
+        if(!hasClasses) {
+            checkboxContainer.innerHTML = '<span style="color: var(--text-muted); font-size: 11px; padding: 5px;">يرجى تأسيس فصول أولاً...</span>';
+        }
+
         renderClassButtons(classes);
     });
 
