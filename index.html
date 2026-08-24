@@ -359,34 +359,39 @@ function markAsSent(btn) {
     btn.style.backgroundColor = '#166534'; 
 }
 
-// دالة إرسال بيانات الدخول (باستخدام اسم المستخدم فقط)
-function getWhatsAppLink(phone, name, user, role) {
+// 1. دالة إرسال بيانات الدخول
+function getWhatsAppLink(phone, name, user, role, className = "") {
     const cleanPhone = formatPhoneForWhatsApp(phone);
     if (!cleanPhone) return '#';
     
+    // تخصيص النص ليناسب الطالب في فصل معين، أو تركه كدور عام (مثل: معلم)
+    const roleText = className ? `${role} في فصل ${className}` : role;
+
     const message = `*🎓 سجل الواجبات الإلكتروني*%0A%0A` +
         `مرحباً *${name}* 👋%0A` +
-        `إليك بيانات الدخول الخاصة بك بصفتك (${role}):%0A%0A` +
+        `تم إعداد حسابك كـ (*${roleText}*). إليك بيانات الدخول:%0A%0A` +
         `👤 *اسم المستخدم:* ${user}%0A` +
-        `💡 *(الدخول يتم باستخدام اسم المستخدم فقط)*%0A%0A` +
-        `🌐 *رابط الدخول للمنصة:*%0A` +
+        `💡 *(يكفي إدخال اسم المستخدم فقط للدخول)*%0A%0A` +
+        `🌐 *رابط المنصة الرسمي:*%0A` +
         `https://usayd-school.github.io/EduTrack/%0A%0A` +
-        `نتمنى لك دوام التوفيق والنجاح 🌟`;
+        `نتمنى لك فصلاً دراسياً حافلاً بالنجاح 🌟`;
 
     return `https://wa.me/${cleanPhone}?text=${message}`;
 }
 
-// دالة إرسال تذكير بتسجيل الدخول (كما هي بدون تغيير)
-function getWhatsAppReminderLink(phone, name, role) {
+// 2. دالة التذكير بتسجيل الدخول
+function getWhatsAppReminderLink(phone, name, role, className = "") {
     const cleanPhone = formatPhoneForWhatsApp(phone);
     if (!cleanPhone) return '#';
     
+    const roleText = className ? `${role} في فصل ${className}` : role;
+
     const message = `*تذكير هام 🚨*%0A%0A` +
         `مرحباً *${name}* 👋%0A` +
-        `نُحيطك علماً بأن حسابك في منصة (سجل الواجبات الإلكتروني) كـ (${role}) لم يتم تفعيله بتسجيل الدخول بعد.%0A%0A` +
-        `يرجى المبادرة بتسجيل الدخول لمتابعة المهام من خلال الرابط التالي:%0A` +
+        `نلاحظ أنه لم يتم تسجيل الدخول لحسابك كـ (*${roleText}*) في منصة سجل الواجبات حتى الآن.%0A%0A` +
+        `يرجى الدخول عبر الرابط أدناه لمتابعة واجباتك ومهامك:%0A` +
         `🌐 https://usayd-school.github.io/EduTrack/%0A%0A` +
-        `شاكرين ومقدرين حسن تعاونك 🌟`;
+        `نحن بانتظارك، وشكراً لتعاونك 🌟`;
 
     return `https://wa.me/${cleanPhone}?text=${message}`;
 }
