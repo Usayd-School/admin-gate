@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taalamna - بوابة إدارة المدرسة الذكية المستقلة</title>
+    <title>سجل الواجبات الإلكتروني - بوابة إدارة المدرسة الذكية</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -12,71 +12,87 @@
 
     <style>
         :root {
-            --bg: #f4f7fe;
             --primary: #4f46e5;
             --secondary: #06b6d4;
             --dark: #0f172a;
-            --surface: rgba(255, 255, 255, 0.85);
-            --border: #e2e8f0;
+            --border: rgba(255, 255, 255, 0.3);
             --success: #22c55e;
-            --warning: #f59e0b;
-            --muted: #64748b;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            --muted: #475569;
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             --whatsapp: #25d366;
         }
 
         * { box-sizing: border-box; font-family: 'Cairo', sans-serif; transition: all 0.2s ease-in-out; }
-        body { margin: 0; background: var(--bg); color: var(--dark); padding: 0; direction: rtl; }
+        
+        body { 
+            margin: 0; 
+            background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%); 
+            color: var(--dark); 
+            padding: 0; 
+            direction: rtl; 
+            min-height: 100vh;
+        }
 
         .container { padding: 30px 20px; max-width: 1400px; margin: auto; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; background: white; padding: 20px 25px; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid rgba(255,255,255,0.7); }
+        .card, .header { 
+            background: rgba(255, 255, 255, 0.65); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px; 
+            padding: 25px; 
+            box-shadow: var(--shadow); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            margin-bottom: 25px; 
+            position: relative; 
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
         .header h1 { margin: 0; font-weight: 900; color: var(--primary); font-size: 26px; }
 
         .grid-container { display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 30px; }
         .full-width { grid-column: span 2; }
         @media (max-width: 1050px) { .grid-container { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
 
-        /* ستايل بطاقات Soft UI */
-        .card { background: var(--surface); backdrop-filter: blur(8px); border-radius: 24px; padding: 25px; box-shadow: var(--shadow); border: 1px solid rgba(255, 255, 255, 0.7); margin-bottom: 25px; position: relative; }
-        .card h2 { margin-top: 0; font-weight: 800; font-size: 19px; border-bottom: 2px dashed #f1f5f9; padding-bottom: 12px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        .card h2 { margin-top: 0; font-weight: 800; font-size: 19px; border-bottom: 2px dashed rgba(0,0,0,0.1); padding-bottom: 12px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
 
         .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
-        .form-group label { font-size: 13px; font-weight: 700; color: var(--muted); }
+        .form-group label { font-size: 13px; font-weight: 700; color: var(--dark); }
         
-        .inp { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; font-weight: 600; background: #f8fafc; outline: none; }
-        .inp:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+        .inp { width: 100%; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.8); border-radius: 12px; font-size: 14px; font-weight: 600; background: rgba(255,255,255,0.9); outline: none; }
+        .inp:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2); }
 
-        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #f8fafc; padding: 15px; border-radius: 14px; border: 1px solid var(--border); }
+        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 14px; border: 1px solid var(--border); }
         .chk-label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer; user-select: none; }
 
-        .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--primary), #6366f1); color: white; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+        .btn-submit { width: 100%; padding: 14px; border: none; border-radius: 14px; background: linear-gradient(135deg, var(--primary), #6366f1); color: white; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3); }
         .btn-submit:active { transform: translateY(0); }
         .btn-accent { background: linear-gradient(135deg, var(--secondary), #0891b2); box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2); }
+        .btn-download { background: #10b981; color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; margin-bottom: 10px; }
 
-        .accounts-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+        .accounts-table { width: 100%; border-collapse: collapse; margin-top: 10px; background: rgba(255,255,255,0.7); border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
         .accounts-table th, .accounts-table td { padding: 14px 16px; text-align: right; font-size: 13px; border-bottom: 1px solid var(--border); font-weight: 600; }
-        .accounts-table th { background: #f1f5f9; font-weight: 700; color: #475569; }
+        .accounts-table th { background: rgba(241, 245, 249, 0.8); font-weight: 700; color: #475569; }
         .accounts-table tr:last-child td { border-bottom: none; }
         
-        .badge { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .badge { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-block; background: #e0e7ff; color: #3730a3; position: relative;}
 
         .classes-flex-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
-        .class-bubble { background: white; border: 1px solid var(--border); padding: 12px 20px; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow); }
+        .class-bubble { background: rgba(255,255,255,0.8); border: 1px solid var(--border); padding: 10px 15px; border-radius: 14px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); justify-content: space-between; min-width: 130px;}
+        .class-bubble > span:first-child { cursor: pointer; flex-grow: 1; }
         .class-bubble:hover { border-color: var(--primary); transform: translateY(-2px); }
-        .class-bubble.selected { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3); }
-        .class-bubble .remove-cls-btn { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
-        .class-bubble.selected .remove-cls-btn { background: rgba(255,255,255,0.2); color: white; }
-
-        .inline-badge { background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-block; }
+        .class-bubble.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .inline-badge { background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; gap: 5px; }
+        
+        .del-icon { cursor: pointer; color: #ef4444; background: rgba(239, 68, 68, 0.1); border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+        .del-icon:hover { background: #ef4444; color: white; }
 
         #notify { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 14px 28px; border-radius: 50px; font-weight: 700; display: none; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 14px; }
         
-        /* شاشة الكارت المنبثق */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); z-index: 5000; justify-content: center; align-items: center; }
         
-        /* التصميم الفاخر الجديد لبطاقة الهوية */
         .id-card { 
             background: linear-gradient(135deg, #ffffff 0%, #fdfbf7 100%); 
             border: 2px solid #e2e8f0;
@@ -89,60 +105,28 @@
             overflow: hidden;
             animation: cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
-        .id-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-        }
+        .id-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
         @keyframes cardPop { from { transform: scale(0.85) translateY(30px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
         
         .id-card-header { font-weight: 900; font-size: 22px; color: var(--dark); margin-top: 5px; }
-        .id-card-logo { font-size: 13px; color: var(--primary); font-weight: 800; margin-bottom: 15px; letter-spacing: 0.5px; opacity: 0.9; }
+        .id-card-logo { font-size: 13px; color: var(--primary); font-weight: 800; margin-bottom: 15px; }
         
         .id-card-body { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        
-        .id-field { 
-            background: #ffffff; 
-            padding: 10px 14px; 
-            border-radius: 14px; 
-            text-align: right; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .id-field { background: #ffffff; padding: 10px 14px; border-radius: 14px; text-align: right; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .id-field-info { display: flex; flex-direction: column; }
         .id-field span { font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
         .id-field strong { font-size: 14px; color: var(--dark); font-weight: 700; }
         
         .btn-card-print { background: var(--dark); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 15px; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-card-print:hover { opacity: 0.9; transform: translateY(-1px); }
         
-        .btn-whatsapp-send {
-            background: var(--whatsapp);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-        }
+        .btn-whatsapp-send { background: var(--whatsapp); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
         .btn-whatsapp-send:hover { background: #20ba5a; transform: scale(1.05); }
 
         .clickable-name { color: var(--primary); cursor: pointer; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
         .clickable-name:hover { color: var(--secondary); text-decoration: underline; }
         
-        .file-upload-wrapper { border: 2px dashed #cbd5e1; padding: 20px; border-radius: 16px; text-align: center; background: #f8fafc; margin-bottom: 15px; cursor: pointer; position: relative; }
-        .file-upload-wrapper:hover { border-color: var(--primary); background: #f0fdf4; }
-        .file-upload-wrapper input[type="file"] { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+        .file-upload-wrapper { border: 2px dashed rgba(255,255,255,0.8); padding: 20px; border-radius: 16px; text-align: center; background: rgba(255,255,255,0.5); margin-bottom: 15px; position: relative; }
+        .file-upload-wrapper input[type="file"] { width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -151,47 +135,26 @@
 
 <div id="cardModal" class="modal" onclick="closeCardModal()">
     <div class="id-card" onclick="event.stopPropagation()">
-        <div class="id-card-header">🎓 منصة تعلمنا الرقمية</div>
+        <div class="id-card-header">🎓 سجل الواجبات الإلكتروني</div>
         <div class="id-card-logo">بطاقة الوصول الموحدة للمستفيد</div>
-        
         <div class="id-card-body">
             <div class="id-field">
-                <div class="id-field-info">
-                    <span>الاسم الكريم</span>
-                    <strong id="cardName">-</strong>
-                </div>
+                <div class="id-field-info"><span>الاسم الكريم</span><strong id="cardName">-</strong></div>
                 <span style="font-size: 20px;">👤</span>
             </div>
             <div class="id-field">
-                <div class="id-field-info">
-                    <span>الارتباط / الصف المعتمد</span>
-                    <strong id="cardRole">-</strong>
-                </div>
+                <div class="id-field-info"><span>الارتباط / التخصص</span><strong id="cardRole">-</strong></div>
                 <span style="font-size: 20px;">🏫</span>
             </div>
             <div class="id-field">
-                <div class="id-field-info">
-                    <span>اسم المستخدم (السجل المدني)</span>
-                    <strong id="cardUser" style="font-family: monospace; color: var(--primary); font-size:15px;">-</strong>
-                </div>
+                <div class="id-field-info"><span>اسم المستخدم (وكلمة المرور)</span><strong id="cardUser" style="font-family: monospace; color: var(--primary); font-size:15px;">-</strong></div>
                 <span style="font-size: 20px;">🔑</span>
             </div>
             <div class="id-field">
-                <div class="id-field-info">
-                    <span>كلمة المرور الخاصة بها</span>
-                    <strong id="cardPass" style="font-family: monospace; color: #ef4444; font-size:15px;">-</strong>
-                </div>
-                <span style="font-size: 20px;">🔒</span>
-            </div>
-            <div class="id-field">
-                <div class="id-field-info">
-                    <span>رقم الجوال النشط</span>
-                    <strong id="cardPhone">-</strong>
-                </div>
-                <a id="cardWhatsappBtn" href="#" target="_blank" class="btn-whatsapp-send">💬 واتساب</a>
+                <div class="id-field-info"><span>رقم الجوال النشط</span><strong id="cardPhone">-</strong></div>
+                <a id="cardWhatsappBtn" href="#" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)">💬 إرسال واتساب</a>
             </div>
         </div>
-
         <button class="btn-card-print" onclick="window.print()">🖨️ طباعة البطاقة الفورية للطلب</button>
         <button class="btn-card-print" style="background:#64748b; margin-top:6px;" onclick="closeCardModal()">إغلاق الشاشة</button>
     </div>
@@ -199,7 +162,7 @@
 
 <div class="container">
 
-    <div id="schoolAuthBox" class="card" style="max-width: 480px; margin: 80px auto; text-align: center;">
+    <div id="schoolAuthBox" class="card" style="max-width: 480px; margin: 80px auto; text-align: center; background: rgba(255,255,255,0.85);">
         <h2>🔐 تسجيل دخول النظام الإداري للمدرسة</h2>
         <p style="color:var(--muted); font-size:13px; margin-bottom:24px;">يرجى استخدام الحساب الممنوح لك من الإدارة العامة للمنصة</p>
         <div class="form-group" style="text-align: right;">
@@ -214,9 +177,9 @@
     </div>
 
     <div id="schoolDashboardContent" style="display: none;">
-        <div class="header" style="background: linear-gradient(135deg, #1e293b, #334155); padding: 25px; border-radius: 20px; color: white; box-shadow: var(--shadow);">
+        <div class="header">
             <div>
-                <h2 id="currentSchoolTitle" style="margin: 0; color: #67e8f9; font-weight: 900; font-size:24px;">لوحة إدارة المدرسة</h2>
+                <h2 id="currentSchoolTitle" style="margin: 0; color: var(--dark); font-weight: 900; font-size:24px;">لوحة إدارة المدرسة</h2>
                 <p id="currentSchoolSubText" style="margin: 5px 0 0; opacity: 0.8; font-size: 13px; font-weight: 600;"></p>
             </div>
             <button onclick="logoutSchoolAdmin()" style="background:#ef4444; color:white; border:none; padding:10px 20px; border-radius:12px; cursor:pointer; font-weight:700; font-size:13px;">تسجيل الخروج</button>
@@ -234,12 +197,12 @@
             </div>
 
             <div class="card">
-                <h2>🗂️ الفصول الدراسية المعتمدة (اضغط لعرض كشف الأسماء والبطاقات)</h2>
+                <h2>🗂️ الفصول الدراسية المعتمدة (انقر للاستعراض أو الحذف)</h2>
                 <div class="classes-flex-grid" id="classesContainerBox"></div>
             </div>
 
             <div class="card">
-                <h2>🔄 تحديث وإسناد فصول معلم مضاف سابقاً (منع تكرار الحسابات)</h2>
+                <h2>🔄 تحديث وإسناد فصول لمعلم مضاف</h2>
                 <div class="form-group">
                     <label>اختر المعلم المراد تعديله</label>
                     <select id="existTeacherSelect" class="inp" onchange="loadExistingTeacherClasses()">
@@ -248,81 +211,78 @@
                 </div>
                 <div class="form-group">
                     <label>تعديل/إضافة الفصول المعتمدة المسندة له 📋</label>
-                    <div class="features-grid" id="existTeacherClassesGrid" style="background: #f8fafc; padding: 14px; max-height: 160px; overflow-y: auto;"></div>
+                    <div class="features-grid" id="existTeacherClassesGrid" style="max-height: 160px; overflow-y: auto;"></div>
                 </div>
-                <button class="btn-submit btn-accent" onclick="updateExistTeacherAssignment()">حفظ وتحديث جداول المعلم الحالي سحابياً 💾</button>
+                <button class="btn-submit btn-accent" onclick="updateExistTeacherAssignment()">حفظ وتحديث جداول المعلم سحابياً 💾</button>
             </div>
 
             <div class="card">
-                <h2>👨‍🏫 إضافة حساب معلم جديد أو رفع ملف Excel</h2>
+                <h2>👨‍🏫 إضافة حساب معلم جديد</h2>
                 
                 <div class="file-upload-wrapper">
-                    <span style="font-weight: bold; color: var(--primary); font-size: 14px;">📁 اضغط لرفع أو استيراد المعلمين من ملف Excel</span>
+                    <button class="btn-download" onclick="downloadTeacherTemplate()">⬇️ تحميل قالب إكسل للمعلمين</button>
+                    <p style="font-weight: bold; color: var(--primary); font-size: 13px; margin-top:5px;">📁 ارفع ملف الإكسل بعد تعبئته لإضافة المعلمين دفعة واحدة</p>
                     <input type="file" id="excelTeachersInput" accept=".xlsx, .xls" onchange="importTeachersExcel(event)">
                 </div>
 
-                <div class="form-group">
-                    <label>اسم المعلم الكامل</label>
-                    <input type="text" id="tName" class="inp" placeholder="مثال: أ. عاصم المشيقح">
-                </div>
-                <div class="form-group">
-                    <label>رقم الجوال الخاص بالمعلم</label>
-                    <input type="text" id="tPhone" class="inp" placeholder="05xxxxxxxx">
-                </div>
-                <div class="form-group">
-                    <label>المادة التعليمية المسندة</label>
-                    <input type="text" id="tSubj" class="inp" placeholder="مثال: لغتي أو الرياضيات">
-                </div>
-                <div class="form-group">
-                    <label>اسم مستخدم البوابة (السجل المدني)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="tUser" class="inp" placeholder="اسم المستخدم أو الهوية الوطنية">
-                        <button class="btn-submit" style="margin:0; width:auto; padding:0 15px; font-size:12px; white-space:nowrap;" onclick="autoGenerateCredentials('tUser', 'tPass')">توليد تلقائي</button>
+                <div style="border-top: 1px dashed var(--border); margin: 15px 0; padding-top: 10px;">
+                    <h3 style="font-size: 14px; color: var(--dark); margin-bottom: 10px;">أو إضافة معلم بشكل يدوي:</h3>
+                    <div class="form-group">
+                        <label>اسم المعلم الكامل</label>
+                        <input type="text" id="tName" class="inp" placeholder="مثال: أ. عاصم المشيقح">
                     </div>
+                    <div class="form-group">
+                        <label>رقم الجوال الخاص بالمعلم</label>
+                        <input type="text" id="tPhone" class="inp" placeholder="05xxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>التخصص / المادة</label>
+                        <input type="text" id="tSubj" class="inp" placeholder="مثال: رياضيات">
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المستخدم (سيكون هو نفسه كلمة المرور)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="tUser" class="inp" placeholder="اسم المستخدم أو الهوية الوطنية">
+                            <button class="btn-submit" style="margin:0; width:auto; padding:0 15px; font-size:12px; white-space:nowrap;" onclick="autoGenerateUser('tUser')">توليد تلقائي</button>
+                        </div>
+                    </div>
+                    <button class="btn-submit" style="background: #0284c7;" onclick="addTeacherAccount()">مزامنة وتوليد حساب المعلم فوراً ✨</button>
                 </div>
-                <div class="form-group">
-                    <label>كلمة المرور</label>
-                    <input type="text" id="tPass" class="inp" placeholder="كلمة المرور">
-                </div>
-                <div class="form-group">
-                    <label>حدد الفصول المبدئية المسندة له 📋</label>
-                    <div class="features-grid" id="teacherClassesCheckboxesGrid" style="background: #f8fafc; padding: 14px; max-height: 150px; overflow-y: auto;"></div>
-                </div>
-                <button class="btn-submit" style="background: #0284c7;" onclick="addAndAssignTeacher()">مزامنة وتوليد حساب المعلم فوراً ✨</button>
             </div>
 
             <div class="card">
-                <h2>👶 إضافة حساب طالب جديد أو رفع كشف Excel</h2>
+                <h2>👶 إضافة حساب طالب جديد</h2>
                 
+                <div class="form-group" style="background: rgba(255,255,255,0.8); padding: 10px; border-radius: 12px; border: 1px solid var(--primary);">
+                    <label style="color: var(--primary);">📌 أولاً: اختر الفصل المعتمد الذي ترغب بالإضافة إليه</label>
+                    <select id="stClassSelect" class="inp"><option value="">-- اختر الفصل --</option></select>
+                </div>
+
                 <div class="file-upload-wrapper">
-                    <span style="font-weight: bold; color: var(--secondary); font-size: 14px;">📁 اضغط لرفع واستيراد الطلاب من ملف Excel</span>
+                    <button class="btn-download" onclick="downloadStudentTemplate()">⬇️ تحميل قالب إكسل للطلاب</button>
+                    <p style="font-weight: bold; color: var(--secondary); font-size: 13px; margin-top:5px;">📁 ارفع ملف الطلاب (سيتم إضافتهم للفصل المحدد بالأعلى)</p>
                     <input type="file" id="excelStudentsInput" accept=".xlsx, .xls" onchange="importStudentsExcel(event)">
                 </div>
 
-                <div class="form-group">
-                    <label>اسم الطالب الكامل</label>
-                    <input type="text" id="stName" class="inp" placeholder="مثال: أحمد عبد الله السعيد">
-                </div>
-                <div class="form-group">
-                    <label>رقم جوال ولي الأمر</label>
-                    <input type="text" id="stPhone" class="inp" placeholder="05xxxxxxxx">
-                </div>
-                <div class="form-group">
-                    <label>اختيار الفصل المعتمد المقيد به</label>
-                    <select id="stClassSelect" class="inp"><option value="">-- اختر الفصل --</option></select>
-                </div>
-                <div class="form-group">
-                    <label>اسم مستخدم الطالب (السجل المدني)</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="stUser" class="inp" placeholder="اسم المستخدم أو السجل المدني">
-                        <button class="btn-submit" style="margin:0; width:auto; padding:0 15px; font-size:12px; white-space:nowrap;" onclick="autoGenerateCredentials('stUser', 'stPass')">توليد تلقائي</button>
+                <div style="border-top: 1px dashed var(--border); margin: 15px 0; padding-top: 10px;">
+                    <h3 style="font-size: 14px; color: var(--dark); margin-bottom: 10px;">أو إضافة طالب بشكل يدوي:</h3>
+                    <div class="form-group">
+                        <label>اسم الطالب الكامل</label>
+                        <input type="text" id="stName" class="inp" placeholder="مثال: أحمد عبد الله السعيد">
                     </div>
+                    <div class="form-group">
+                        <label>رقم جوال ولي الأمر</label>
+                        <input type="text" id="stPhone" class="inp" placeholder="05xxxxxxxx">
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المستخدم (سيكون هو نفسه كلمة المرور)</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="stUser" class="inp" placeholder="اسم المستخدم أو السجل المدني">
+                            <button class="btn-submit" style="margin:0; width:auto; padding:0 15px; font-size:12px; white-space:nowrap;" onclick="autoGenerateUser('stUser')">توليد تلقائي</button>
+                        </div>
+                    </div>
+                    <button class="btn-submit" style="background: #06b6d4;" onclick="addStudentAccount()">توليد ومزامنة حساب الطالب 🚀</button>
                 </div>
-                <div class="form-group">
-                    <label>كلمة مرور الدخول</label>
-                    <input type="text" id="stPass" class="inp" placeholder="كلمة المرور">
-                </div>
-                <button class="btn-submit" style="background: #06b6d4;" onclick="addStudentAccount()">توليد ومزامنة حساب الطالب 🚀</button>
             </div>
 
             <div class="card full-width" id="classSheetCard" style="display:none; border: 2px solid var(--primary);">
@@ -331,10 +291,9 @@
                     <table class="accounts-table">
                         <thead>
                             <tr>
-                                <th>اسم الطالب (اضغط لعرض البطاقة 🪪)</th>
+                                <th>اسم الطالب (البطاقة 🪪)</th>
                                 <th>رقم الجوال والارسال</th>
-                                <th>اسم المستخدم / السجل المدني</th>
-                                <th>كلمة المرور الحالية</th>
+                                <th>اسم المستخدم والمرور</th>
                                 <th>حالة المزامنة</th>
                                 <th>إجراء</th>
                             </tr>
@@ -345,18 +304,16 @@
             </div>
 
             <div class="card full-width">
-                <h2>👨‍🏫 كشف حسابات المعلمين المقيدين وجدول الإسناد الحالي بالمدرسة</h2>
+                <h2>👨‍🏫 كشف المعلمين وجدول الإسناد</h2>
                 <div style="overflow-x: auto;">
                     <table class="accounts-table">
                         <thead>
                             <tr>
-                                <th>اسم المعلم (اضغط لعرض البطاقة 🪪)</th>
+                                <th>اسم المعلم (البطاقة 🪪)</th>
                                 <th>رقم الجوال والارسال</th>
-                                <th>اسم المستخدم (البوابة)</th>
-                                <th>كلمة المرور الحالية</th>
-                                <th>المادة المسندة</th>
-                                <th>الفصول المعتمدة المسندة له</th>
-                                <th>حالة المزامنة</th>
+                                <th>اسم المستخدم والمرور</th>
+                                <th>المادة / التخصص</th>
+                                <th>الفصول المسندة (إلغاء ✖)</th>
                                 <th>إجراء</th>
                             </tr>
                         </thead>
@@ -371,14 +328,12 @@
 </div>
 
 <script>
-// تهيئة وإعداد الاتصال المباشر مع قاعدة بيانات الـ Firebase السحابية للمشروع
 const firebaseConfig = {
     apiKey: "AIzaSyCIW17B6y6sG_bdUFqF7FWoVIY9ynXv1B4",
     authDomain: "myschoolproject-4ad92.firebaseapp.com",
     databaseURL: "https://myschoolproject-4ad92-default-rtdb.firebaseio.com",
     projectId: "myschoolproject-4ad92"
 };
-
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
@@ -388,86 +343,76 @@ let selectedClassFilter = null;
 
 function cleanString(str) {
     if(!str) return "";
-    return str.toString().replace(/[٠-٩]/g, function (d) {
-        return d.charCodeAt(0) - 1632;
-    }).trim();
+    return str.toString().replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 1632; }).trim();
 }
 
-// دالة لتنسيق أرقام الهواتف السعودية لتتوافق مع نظام الواتساب العالمي
 function formatPhoneForWhatsApp(phone) {
     let p = cleanString(phone).replace(/\s+/g, '');
-    if(p.startsWith('05')) {
-        p = '966' + p.substring(1);
-    }
+    if(p.startsWith('05')) { p = '966' + p.substring(1); }
     return p;
 }
 
-// دالة توليد نص الرسالة الجاهزة للإرسال عبر الواتساب
-function getWhatsAppLink(phone, name, user, pass, role) {
+function markAsSent(btn) {
+    btn.innerHTML = '✅ تم الإرسال';
+    btn.style.backgroundColor = '#166534'; 
+}
+
+function getWhatsAppLink(phone, name, user, role) {
     const cleanPhone = formatPhoneForWhatsApp(phone);
     if(!cleanPhone) return '#';
-    const message = `مرحباً ${name}،%0Aإليك بيانات الدخول الخاصة بك لمنصة تعلمنا المدرسية (${role}):%0A%0A👤 اسم المستخدم: ${user}%0A🔒 كلمة المرور: ${pass}%0A%0Aنتمنى لك توفيقاً دائماً ونشكرك لتعاونك.`;
+    const message = `*🎓 سجل الواجبات الإلكتروني*%0A%0Aمرحباً *${name}*،%0Aإليك تفاصيل الدخول الخاصة بك كـ (${role}):%0A%0A*👤 اسم المستخدم:* ${user}%0A*🔑 كلمة المرور:* ${user} (نفس اسم المستخدم)%0A%0Aنتمنى لك توفيقاً دائماً 🌟`;
     return `https://wa.me/${cleanPhone}?text=${message}`;
 }
 
-function autoGenerateCredentials(userFieldId, passFieldId) {
+function autoGenerateUser(userFieldId) {
     const randomUser = 'edu' + Math.floor(100000 + Math.random() * 900000);
-    const randomPass = Math.floor(100000 + Math.random() * 900000);
     document.getElementById(userFieldId).value = randomUser;
-    document.getElementById(passFieldId).value = randomPass;
-    showNotification("تم توليد بيانات دخول افتراضية ذكية بنجاح ✓");
+    showNotification("تم توليد اسم مستخدم افتراضي بنجاح ✓");
 }
 
-// التحكم بنافذة عرض بطاقة الدخول الرقمية الفاخرة للطباعة مع دعم الواتساب
-function openCardModal(name, role, user, pass, phone) {
+function openCardModal(name, role, user, phone) {
     document.getElementById('cardName').innerText = name;
     document.getElementById('cardRole').innerText = role;
     document.getElementById('cardUser').innerText = user;
-    document.getElementById('cardPass').innerText = pass;
     document.getElementById('cardPhone').innerText = phone || 'غير متوفر حالياً';
     
     const waBtn = document.getElementById('cardWhatsappBtn');
     if(phone) {
-        waBtn.href = getWhatsAppLink(phone, name, user, pass, role);
+        waBtn.href = getWhatsAppLink(phone, name, user, role);
         waBtn.style.display = 'inline-flex';
+        waBtn.innerHTML = '💬 إرسال واتساب';
+        waBtn.style.backgroundColor = 'var(--whatsapp)';
     } else {
         waBtn.style.display = 'none';
     }
     
     document.getElementById('cardModal').style.display = 'flex';
 }
-function closeCardModal() {
-    document.getElementById('cardModal').style.display = 'none';
-}
+function closeCardModal() { document.getElementById('cardModal').style.display = 'none'; }
 
 function loginAsSchoolAdmin() {
     const uInput = cleanString(document.getElementById('admLoginUser').value);
     const pInput = cleanString(document.getElementById('admLoginPass').value);
 
-    if(!uInput || !pInput) { alert("من فضلك أدخل حساب الإدارة وكلمة المرور أولاً لربط النظام."); return; }
+    if(!uInput || !pInput) { alert("أدخل حساب الإدارة وكلمة المرور."); return; }
 
     database.ref('school_admins').once('value').then(snapshot => {
         const admins = snapshot.val() || {};
         let loggedAdmin = null;
-
         for(let id in admins) {
             if(admins[id].user === uInput && admins[id].pass.toString() === pInput) {
-                loggedAdmin = admins[id];
-                break;
+                loggedAdmin = admins[id]; break;
             }
         }
-
         if(loggedAdmin) {
             activeSchoolId = loggedAdmin.schoolId;
             activeSchoolName = loggedAdmin.schoolName;
-            
             document.getElementById('schoolAuthBox').style.display = 'none';
             document.getElementById('schoolDashboardContent').style.display = 'block';
-            document.getElementById('currentSchoolTitle').innerText = "🏢 لوحة إدارة ومتابعة: " + activeSchoolName;
-            document.getElementById('currentSchoolSubText').innerText = "معرف المزامنة النشط مع السحابة: " + activeSchoolId;
+            document.getElementById('currentSchoolTitle').innerText = "🏢 إدارة سجل الواجبات الإلكتروني: " + activeSchoolName;
             initSchoolDashboard();
         } else {
-            alert("فشل تسجيل الدخول: خطأ في اسم مستخدم الإدارة أو كلمة المرور، يرجى التثبت والمحاولة مجدداً.");
+            alert("خطأ في البيانات.");
         }
     });
 }
@@ -482,83 +427,64 @@ function initSchoolDashboard() {
 function createSchoolClass() {
     if(!activeSchoolId) return;
     const className = document.getElementById('newClassNameInput').value.trim();
-    if(!className) { alert("من فضلك اكتب اسم الفصل الدراسي المراد تدشينه أولاً."); return; }
+    if(!className) return;
 
     database.ref('classes/' + activeSchoolId).push({ className: className }).then(() => {
-        showNotification("تم تدشين وتثبيت الفصل الدراسي الجديد بنجاح ✓");
+        showNotification("تم تدشين الفصل ✓");
         document.getElementById('newClassNameInput').value = '';
+    });
+}
+
+function deleteSchoolClass(clsName) {
+    if(!confirm(`هل أنت متأكد من حذف الفصل (${clsName}) بالكامل؟ (سيظل الطلاب المحفوظين مسبقاً مسجلين على هذا الفصل ولكن لن يظهر الفصل في القائمة)`)) return;
+    
+    database.ref('classes/' + activeSchoolId).once('value').then(snapshot => {
+        snapshot.forEach(child => {
+            if(child.val().className === clsName) {
+                database.ref('classes/' + activeSchoolId + '/' + child.key).remove().then(() => {
+                    showNotification("تم حذف الفصل بنجاح ✓");
+                    if (selectedClassFilter === clsName) {
+                        selectedClassFilter = null;
+                        document.getElementById('classSheetCard').style.display = 'none';
+                    }
+                });
+            }
+        });
     });
 }
 
 function syncClassesLayout() {
     if(!activeSchoolId) return;
-
     database.ref('classes/' + activeSchoolId).once('value').then(snapshot => {
         const classesData = snapshot.val() || {};
         const container = document.getElementById('classesContainerBox');
         const selectDropdown = document.getElementById('stClassSelect');
-        const teacherGrid = document.getElementById('teacherClassesCheckboxesGrid');
         const existTeacherGrid = document.getElementById('existTeacherClassesGrid');
         
-        container.innerHTML = '';
-        selectDropdown.innerHTML = '<option value="">-- اختر الفصل --</option>';
-        teacherGrid.innerHTML = '';
+        container.innerHTML = ''; selectDropdown.innerHTML = '<option value="">-- اختر الفصل --</option>';
         existTeacherGrid.innerHTML = '';
 
-        let hasClasses = false;
         for(let key in classesData) {
-            hasClasses = true;
             let clsName = classesData[key].className;
-
             selectDropdown.innerHTML += `<option value="${clsName}">${clsName}</option>`;
-
-            const checkboxHtml = `
-                <label class="chk-label" style="background:#fff; padding:6px 10px; border-radius:8px; border:1px solid var(--border);">
-                    <input type="checkbox" name="teacherSelectedClass" value="${clsName}"> ${clsName}
-                </label>`;
-                
-            const checkboxExistHtml = `
-                <label class="chk-label" style="background:#fff; padding:6px 10px; border-radius:8px; border:1px solid var(--border);">
-                    <input type="checkbox" name="existTeacherSelectedClass" value="${clsName}"> ${clsName}
-                </label>`;
-
-            teacherGrid.innerHTML += checkboxHtml;
-            existTeacherGrid.innerHTML += checkboxExistHtml;
+            existTeacherGrid.innerHTML += `<label class="chk-label"><input type="checkbox" name="existTeacherSelectedClass" value="${clsName}"> ${clsName}</label>`;
 
             let isSelected = (selectedClassFilter === clsName) ? 'selected' : '';
             container.innerHTML += `
-                <div class="class-bubble ${isSelected}" onclick="selectClassForSheet('${clsName}')">
-                    🏫 <span>${clsName}</span>
-                    <button class="remove-cls-btn" onclick="deleteClass(event, '${key}', '${clsName}')">×</button>
+                <div class="class-bubble ${isSelected}">
+                    <span onclick="selectClassForSheet('${clsName}')">🏫 ${clsName}</span>
+                    <span class="del-icon" onclick="deleteSchoolClass('${clsName}')" title="حذف الفصل">✖</span>
                 </div>`;
-        }
-
-        if(!hasClasses) {
-            container.innerHTML = `<p style="color:var(--muted); font-size:13px; font-weight:600;">لم يتم تهيئة أي فصول دراسية للمدرسة حالياً.</p>`;
-            teacherGrid.innerHTML = `<p style="color:var(--muted); font-size:12px; grid-column:span 2;">يرجى إنشاء فصول للمدرسة أولاً للاستناد عليها.</p>`;
         }
     });
 }
 
 function selectClassForSheet(clsName) {
     selectedClassFilter = clsName;
-    syncClassesLayout();
+    syncClassesLayout(); // لتحديث اللون
     document.getElementById('classSheetCard').style.display = 'block';
-    document.getElementById('classSheetTitle').innerHTML = `📋 كشف وبطاقات طلاب مدرسة (${activeSchoolName}) المقيدين في: <span style="color:var(--primary)">${clsName}</span>`;
+    document.getElementById('classSheetTitle').innerHTML = `📋 طلاب: <span style="color:var(--primary)">${clsName}</span>`;
     buildStudentsGrid(clsName);
-}
-
-function deleteClass(event, classKey, clsName) {
-    event.stopPropagation();
-    if(confirm(`هل أنت متأكد من حذف فصل (${clsName})؟ سيترتب عليه إلغاء تصفية طلاب هذا الفصل.`)) {
-        database.ref(`classes/${activeSchoolId}/${classKey}`).remove().then(() => {
-            if(selectedClassFilter === clsName) {
-                document.getElementById('classSheetCard').style.display = 'none';
-                selectedClassFilter = null;
-            }
-            showNotification("تم حذف وإزالة الفصل من المدرسة.");
-        });
-    }
 }
 
 function populateExistingTeachersDropdown() {
@@ -578,7 +504,6 @@ function loadExistingTeacherClasses() {
     const tKey = document.getElementById('existTeacherSelect').value;
     document.querySelectorAll('input[name="existTeacherSelectedClass"]').forEach(cb => cb.checked = false);
     if(!tKey) return;
-
     database.ref('assignments/' + tKey).once('value').then(snapshot => {
         const tData = snapshot.val();
         if(tData && tData.className) {
@@ -592,50 +517,42 @@ function loadExistingTeacherClasses() {
 
 function updateExistTeacherAssignment() {
     const tKey = document.getElementById('existTeacherSelect').value;
-    if(!tKey) { alert("من فضلك حدد المعلم أولاً المراد تحديث جداوله البرمجية."); return; }
-
+    if(!tKey) return;
     let checkedBoxes = document.querySelectorAll('input[name="existTeacherSelectedClass"]:checked');
-    let selectedClassesArray = [];
-    checkedBoxes.forEach(cb => { selectedClassesArray.push(cb.value); });
-
-    const combinedClassesString = selectedClassesArray.join(', ');
-    database.ref('assignments/' + tKey).update({ className: combinedClassesString }).then(() => {
-        showNotification("تم تحديث وإسناد الفصول للمعلم بنجاح دون تكرار الاسم حسابياً ✓");
-        buildTeachersGrid();
+    let selectedClassesArray = Array.from(checkedBoxes).map(cb => cb.value);
+    database.ref('assignments/' + tKey).update({ className: selectedClassesArray.join(', ') }).then(() => {
+        showNotification("تم تحديث الفصول ✓"); buildTeachersGrid();
     });
 }
 
-function addAndAssignTeacher() {
+function addTeacherAccount() {
     if(!activeSchoolId) return;
-
     const name = document.getElementById('tName').value.trim();
     const phone = document.getElementById('tPhone').value.trim();
     const subj = document.getElementById('tSubj').value.trim();
     const user = cleanString(document.getElementById('tUser').value).toLowerCase();
-    const pass = cleanString(document.getElementById('tPass').value);
 
-    const checkedBoxes = document.querySelectorAll('input[name="teacherSelectedClass"]:checked');
-    let selectedClassesArray = [];
-    checkedBoxes.forEach(cb => { selectedClassesArray.push(cb.value); });
-
-    if(!name || !subj || !user || !pass) { 
-        alert("تنبيه: يرجى كتابة البيانات الأساسية للمعلم (الاسم، المادة، اسم المستخدم، كلمة المرور) للمزامنة."); 
-        return; 
-    }
-
-    const combinedClassesString = selectedClassesArray.join(', ');
+    if(!name || !user) { alert("أكمل البيانات الأساسية (الاسم واسم المستخدم)."); return; }
 
     const teacherData = {
-        teacherName: name, teacherPhone: phone, subject: subj, teacherUser: user, teacherPass: pass,
-        className: combinedClassesString, schoolId: activeSchoolId
+        teacherName: name, teacherPhone: phone, subject: subj || 'عام', teacherUser: user, teacherPass: user,
+        className: '', schoolId: activeSchoolId
     };
 
     database.ref('assignments').push(teacherData).then(() => {
-        showNotification("تم تسجيل ومزامنة حساب المعلم فوراً سحابياً ✓");
-        document.getElementById('tName').value = ''; document.getElementById('tPhone').value = ''; document.getElementById('tSubj').value = '';
-        document.getElementById('tUser').value = ''; document.getElementById('tPass').value = '';
-        document.querySelectorAll('input[name="teacherSelectedClass"]:checked').forEach(cb => cb.checked = false);
+        showNotification("تم إضافة المعلم ✓");
+        document.getElementById('tName').value = ''; document.getElementById('tPhone').value = ''; 
+        document.getElementById('tSubj').value = ''; document.getElementById('tUser').value = '';
     });
+}
+
+function removeTeacherClass(tKey, currentClasses, classToRemove) {
+    if(confirm(`هل أنت متأكد من إلغاء إسناد فصل (${classToRemove})؟`)) {
+        let classesArray = currentClasses.split(',').map(c => c.trim()).filter(c => c !== classToRemove && c !== '');
+        database.ref('assignments/' + tKey).update({ className: classesArray.join(', ') }).then(() => {
+            showNotification("تم إزالة الفصل من المعلم ✓"); buildTeachersGrid();
+        });
+    }
 }
 
 function buildTeachersGrid() {
@@ -651,161 +568,151 @@ function buildTeachersGrid() {
                 let visualBadges = '';
                 if(item.className) {
                     let legacyClasses = item.className.split(',');
-                    legacyClasses.forEach(c => { if(c.trim()) visualBadges += `<span class="inline-badge">🏫 ${c.trim()}</span>`; });
+                    legacyClasses.forEach(c => { 
+                        if(c.trim()) {
+                            visualBadges += `<span class="inline-badge">🏫 ${c.trim()} <span class="del-icon" onclick="removeTeacherClass('${key}', '${item.className}', '${c.trim()}')" title="حذف هذا الفصل">✖</span></span>`; 
+                        }
+                    });
                 } else {
-                    visualBadges = `<span style="color:var(--muted); font-size:12px;">لا يوجد فصول مسندة</span>`;
+                    visualBadges = `<span style="color:var(--muted); font-size:12px;">لا يوجد فصول</span>`;
                 }
+                
+                let subjectBadge = item.subject ? `<span class="badge">${item.subject}</span>` : '<span class="badge" style="background:#f1f5f9; color:#94a3b8;">بدون مادة</span>';
 
-                const waLink = item.teacherPhone ? getWhatsAppLink(item.teacherPhone, item.teacherName, item.teacherUser, item.teacherPass, `معلم مادة ${item.subject}`) : '#';
-                const waDisplay = item.teacherPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" style="margin-right:6px;">💬 مراسلة</a>` : '';
+                const waLink = item.teacherPhone ? getWhatsAppLink(item.teacherPhone, item.teacherName, item.teacherUser, `معلم`) : '#';
+                const waDisplay = item.teacherPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)">💬 إرسال</a>` : '';
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><a class="clickable-name" onclick="openCardModal('${item.teacherName}', 'معلم مادة: ${item.subject}', '${item.teacherUser}', '${item.teacherPass}', '${item.teacherPhone}')">👤 ${item.teacherName} 🪪</a></td>
+                        <td><a class="clickable-name" onclick="openCardModal('${item.teacherName}', 'معلم تخصص: ${item.subject}', '${item.teacherUser}', '${item.teacherPhone}')">👤 ${item.teacherName} 🪪</a></td>
                         <td>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:110px;" value="${item.teacherPhone || ''}" onchange="updateTeacherField('${key}', 'teacherPhone', this.value)">
+                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:90px;" value="${item.teacherPhone || ''}" onchange="updateField('assignments', '${key}', 'teacherPhone', this.value)">
                                 ${waDisplay}
                             </div>
                         </td>
-                        <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.teacherUser}" onchange="updateTeacherField('${key}', 'teacherUser', this.value)"></td>
-                        <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.teacherPass}" onchange="updateTeacherField('${key}', 'teacherPass', this.value)"></td>
-                        <td><span class="badge" style="background:#e0e7ff; color:#3730a3;">${item.subject}</span></td>
+                        <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.teacherUser}" onchange="updateField('assignments', '${key}', 'teacherUser', this.value); updateField('assignments', '${key}', 'teacherPass', this.value)"></td>
+                        <td>${subjectBadge}</td>
                         <td><div style="display:flex; flex-wrap:wrap; gap:4px;">${visualBadges}</div></td>
-                        <td><small style="color:var(--success); font-weight:bold;">حفظ تلقائي ✓</small></td>
-                        <td><button onclick="removeTeacher('${key}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:700;">حذف الحساب</button></td>
+                        <td><button onclick="removeAccount('assignments', '${key}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:700;">حذف بالكامل</button></td>
                     </tr>`;
                 }
         }
     });
 }
 
-function updateTeacherField(key, field, value) {
-    let updateData = {};
-    updateData[field] = value;
-    database.ref('assignments/' + key).update(updateData).then(() => {
-        showNotification("تم تحديث بيانات المعلم فوراً سحابياً ✓");
-        buildTeachersGrid();
-    });
-}
-
-function removeTeacher(key) {
-    if(confirm("هل أنت متأكد من حذف حساب المعلم بالكامل وإلغاء إسناد فصوله؟")) {
-        database.ref('assignments/' + key).remove().then(() => { showNotification("تم إزالة حساب المعلم بنجاح."); });
-    }
-}
-
 function addStudentAccount() {
     if(!activeSchoolId) return;
-
     const sName = document.getElementById('stName').value.trim();
     const sPhone = document.getElementById('stPhone').value.trim();
     const sClass = document.getElementById('stClassSelect').value;
     const sUser = cleanString(document.getElementById('stUser').value).toLowerCase();
-    const sPass = cleanString(document.getElementById('stPass').value);
 
-    if(!sName || !sClass || !sUser || !sPass) {
-        alert("تنبيه: يرجى تعبئة كامل الحقول واختيار صف دراسي معتمد لإصدار حساب الطالب.");
-        return;
-    }
+    if(!sClass) { alert("أولاً: يرجى اختيار الفصل من القائمة بالأعلى."); return; }
+    if(!sName || !sUser) { alert("أكمل البيانات الأساسية للطالب."); return; }
 
     const studentData = {
         studentName: sName, studentPhone: sPhone, className: sClass, studentUser: sUser,
-        studentPass: sPass, schoolId: activeSchoolId
+        studentPass: sUser, schoolId: activeSchoolId
     };
 
     database.ref('students').push(studentData).then(() => {
-        showNotification("تم توليد ومزامنة ملف حساب الطالب سحابياً ✓");
-        document.getElementById('stName').value = ''; document.getElementById('stPhone').value = ''; document.getElementById('stClassSelect').value = '';
-        document.getElementById('stUser').value = ''; document.getElementById('stPass').value = '';
+        showNotification("تم إضافة الطالب ✓");
+        document.getElementById('stName').value = ''; document.getElementById('stPhone').value = ''; 
+        document.getElementById('stUser').value = '';
         if(selectedClassFilter === sClass) buildStudentsGrid(sClass);
     });
 }
 
 function buildStudentsGrid(clsName) {
     if(!activeSchoolId) return;
-
     database.ref('students').once('value').then(snapshot => {
         const data = snapshot.val() || {};
         const tbody = document.getElementById('currentClassStudentsTableBody');
         tbody.innerHTML = '';
-
         let count = 0;
         for(let key in data) {
             let item = data[key];
             if(item.schoolId === activeSchoolId && item.className === clsName) {
                 count++;
-                
-                const waLink = item.studentPhone ? getWhatsAppLink(item.studentPhone, item.studentName, item.studentUser, item.studentPass, `الفصل ${item.className}`) : '#';
-                const waDisplay = item.studentPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" style="margin-right:6px;">💬 مراسلة</a>` : '';
+                const waLink = item.studentPhone ? getWhatsAppLink(item.studentPhone, item.studentName, item.studentUser, `الفصل ${item.className}`) : '#';
+                const waDisplay = item.studentPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)">💬 إرسال</a>` : '';
 
                 tbody.innerHTML += `
                     <tr>
-                        <td><a class="clickable-name" onclick="openCardModal('${item.studentName}', 'الفصل الدراسي: ${item.className}', '${item.studentUser}', '${item.studentPass}', '${item.studentPhone}')">👶 ${item.studentName} 🪪</a></td>
+                        <td><a class="clickable-name" onclick="openCardModal('${item.studentName}', 'الفصل: ${item.className}', '${item.studentUser}', '${item.studentPhone}')">👶 ${item.studentName} 🪪</a></td>
                         <td>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:110px;" value="${item.studentPhone || ''}" onchange="updateStudentField('${key}', 'studentPhone', this.value)">
+                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:90px;" value="${item.studentPhone || ''}" onchange="updateField('students', '${key}', 'studentPhone', this.value)">
                                 ${waDisplay}
                             </div>
                         </td>
-                        <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.studentUser}" onchange="updateStudentField('${key}', 'studentUser', this.value)"></td>
-                        <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.studentPass}" onchange="updateStudentField('${key}', 'studentPass', this.value)"></td>
+                        <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.studentUser}" onchange="updateField('students', '${key}', 'studentUser', this.value); updateField('students', '${key}', 'studentPass', this.value)"></td>
                         <td><small style="color:var(--success); font-weight:bold;">حفظ تلقائي ✓</small></td>
-                        <td><button onclick="removeStudent('${key}', '${item.className}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:700;">حذف الطالب</button></td>
+                        <td><button onclick="removeAccount('students', '${key}', '${item.className}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:700;">حذف الطالب</button></td>
                     </tr>`;
             }
         }
-        if(count === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:25px; font-weight:700;">لا يوجد طلاب مقيدين في هذا فصل للمدرسة الحالية حالياً.</td></tr>`;
-        }
+        if(count === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا يوجد طلاب.</td></tr>`;
     });
 }
 
-function updateStudentField(key, field, value) {
-    let updateData = {};
-    updateData[field] = value;
-    database.ref('students/' + key).update(updateData).then(() => {
-        showNotification("تم تحديث بيانات الطالب تلقائياً بنجاح ✓");
-        if(selectedClassFilter) buildStudentsGrid(selectedClassFilter);
+function updateField(path, key, field, value) {
+    let updateData = {}; updateData[field] = value;
+    database.ref(path + '/' + key).update(updateData).then(() => {
+        showNotification("تم التحديث ✓");
+        if(path === 'assignments') buildTeachersGrid();
+        if(path === 'students' && selectedClassFilter) buildStudentsGrid(selectedClassFilter);
     });
 }
 
-function removeStudent(key, clsName) {
-    if(confirm("هل أنت متأكد من حذف حساب الطالب نهائياً من قيود المدرسة السحابية؟")) {
-        database.ref('students/' + key).remove().then(() => {
-            showNotification("تم إزالة حساب الطالب وإلغاء قيده.");
-            buildStudentsGrid(clsName);
+function removeAccount(path, key, clsName) {
+    if(confirm("تأكيد الحذف؟")) {
+        database.ref(path + '/' + key).remove().then(() => {
+            showNotification("تم الإزالة.");
+            if(path === 'assignments') buildTeachersGrid();
+            if(path === 'students') buildStudentsGrid(clsName);
         });
     }
+}
+
+// إنشاء ملفات إكسل كقوالب جاهزة للتحميل
+function downloadTeacherTemplate() {
+    const ws = XLSX.utils.json_to_sheet([{ "اسم المعلم": "", "رقم الجوال": "", "التخصص": "", "كلمة المرور": "" }]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "المعلمين");
+    XLSX.writeFile(wb, "قالب_رفع_المعلمين.xlsx");
+}
+
+function downloadStudentTemplate() {
+    const ws = XLSX.utils.json_to_sheet([{ "اسم الطالب": "", "رقم الجوال": "", "كلمة المرور": "" }]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "الطلاب");
+    XLSX.writeFile(wb, "قالب_رفع_الطلاب.xlsx");
 }
 
 function importTeachersExcel(event) {
     const file = event.target.files[0];
     if(!file || !activeSchoolId) return;
-
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, {type: 'array'});
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
         jsonData.forEach(row => {
+            let u = cleanString(row['كلمة المرور'] || row['اسم المستخدم'] || ('user' + Math.floor(Math.random()*100000)));
             const tData = {
-                teacherName: row['الاسم'] || row['اسم المعلم'] || 'معلم مستورد تلقائياً',
-                teacherPhone: row['الجوال'] || row['رقم الجوال'] || '',
-                subject: row['المادة'] || 'عام',
-                teacherUser: cleanString(row['المستخدم'] || row['السجل المدني'] || ('user' + Math.floor(Math.random()*100000))),
-                teacherPass: cleanString(row['كلمة المرور'] || '123456'),
-                className: row['الفصول'] || '',
-                schoolId: activeSchoolId
+                teacherName: row['اسم المعلم'] || row['الاسم'] || 'معلم مستورد',
+                teacherPhone: row['رقم الجوال'] || row['الجوال'] || '',
+                subject: row['التخصص'] || row['المادة'] || 'عام',
+                teacherUser: u, teacherPass: u,
+                className: '', schoolId: activeSchoolId
             };
             database.ref('assignments').push(tData);
         });
-        showNotification("تم استيراد كشف حسابات المعلمين من ملف الـ Excel بنجاح ✓");
-        buildTeachersGrid();
-        event.target.value = ''; 
+        showNotification("تم استيراد المعلمين بنجاح ✓"); buildTeachersGrid(); event.target.value = ''; 
     };
     reader.readAsArrayBuffer(file);
 }
@@ -813,29 +720,33 @@ function importTeachersExcel(event) {
 function importStudentsExcel(event) {
     const file = event.target.files[0];
     if(!file || !activeSchoolId) return;
+    
+    const selectedClassForImport = document.getElementById('stClassSelect').value;
+    if(!selectedClassForImport) {
+        alert("تنبيه هام: يجب عليك اختيار الفصل من القائمة المنسدلة أولاً قبل اختيار ملف الإكسل.");
+        event.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
     reader.onload = function(e) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, {type: 'array'});
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
         jsonData.forEach(row => {
+            let u = cleanString(row['كلمة المرور'] || row['اسم المستخدم'] || ('std' + Math.floor(Math.random()*100000)));
             const stData = {
-                studentName: row['الاسم'] || row['اسم الطالب'] || 'طالب مستورد تلقائياً',
-                studentPhone: row['الجوال'] || row['رقم الجوال'] || '',
-                className: row['الفصل'] || 'غير محدد',
-                studentUser: cleanString(row['المستخدم'] || row['السجل المدني'] || ('std' + Math.floor(Math.random()*100000))),
-                studentPass: cleanString(row['كلمة المرور'] || '123456'),
-                schoolId: activeSchoolId
+                studentName: row['اسم الطالب'] || row['الاسم'] || 'طالب مستورد',
+                studentPhone: row['رقم الجوال'] || row['الجوال'] || '',
+                className: selectedClassForImport, // يقرأ من الفصل المختار
+                studentUser: u, studentPass: u, schoolId: activeSchoolId
             };
             database.ref('students').push(stData);
         });
-        showNotification("تم استيراد كشف وفصول الطلاب بنجاح وتوزيعهم تلقائياً ✓");
-        if(selectedClassFilter) buildStudentsGrid(selectedClassFilter);
-        event.target.value = ''; 
+        showNotification("تم إضافة الطلاب للفصل بنجاح ✓"); 
+        if(selectedClassFilter) buildStudentsGrid(selectedClassFilter); event.target.value = ''; 
     };
     reader.readAsArrayBuffer(file);
 }
@@ -845,13 +756,11 @@ function logoutSchoolAdmin() {
     document.getElementById('schoolDashboardContent').style.display = 'none';
     document.getElementById('classSheetCard').style.display = 'none';
     document.getElementById('schoolAuthBox').style.display = 'block';
-    document.getElementById('admLoginUser').value = ''; document.getElementById('admLoginPass').value = '';
 }
 
 function showNotification(msg) {
     const n = document.getElementById('notify');
-    n.innerText = msg; n.style.display = 'block';
-    setTimeout(() => n.style.display = 'none', 3500);
+    n.innerText = msg; n.style.display = 'block'; setTimeout(() => n.style.display = 'none', 3500);
 }
 </script>
 </body>
