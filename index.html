@@ -295,6 +295,7 @@
                                 <th>رقم الجوال والارسال</th>
                                 <th>اسم المستخدم والمرور</th>
                                 <th>حالة المزامنة</th>
+                                <th>حالة الدخول</th>
                                 <th>إجراء</th>
                             </tr>
                         </thead>
@@ -314,6 +315,7 @@
                                 <th>اسم المستخدم والمرور</th>
                                 <th>المادة / التخصص</th>
                                 <th>الفصول المسندة (إلغاء ✖)</th>
+                                <th>حالة الدخول</th>
                                 <th>إجراء</th>
                             </tr>
                         </thead>
@@ -362,6 +364,24 @@ function getWhatsAppLink(phone, name, user, role) {
     if(!cleanPhone) return '#';
     const message = `*🎓 سجل الواجبات الإلكتروني*%0A%0Aمرحباً *${name}*،%0Aإليك تفاصيل الدخول الخاصة بك كـ (${role}):%0A%0A*👤 اسم المستخدم:* ${user}%0A*🔑 كلمة المرور:* ${user} (نفس اسم المستخدم)%0A%0Aنتمنى لك توفيقاً دائماً 🌟`;
     return `https://wa.me/${cleanPhone}?text=${message}`;
+}
+
+// دالة توليد رسالة تنبيه مخصصة للواتساب لمن لم يسجل دخوله
+function getWhatsAppReminderLink(phone, name, role) {
+    const cleanPhone = formatPhoneForWhatsApp(phone);
+    if(!cleanPhone) return '#';
+    const message = `*تنبيه هام 🚨*%0A%0Aمرحباً *${name}*،%0Aنلاحظ أنه لم يتم تفعيل حسابك أو الدخول لمنصة سجل الواجبات الإلكتروني كـ (${role}).%0A%0Aيرجى المبادرة بتسجيل الدخول لتفعيل الحساب ومتابعة المهام.%0Aشكراً لتعاونك!`;
+    return `https://wa.me/${cleanPhone}?text=${message}`;
+}
+
+// دالة لمعالجة وعرض حالة تسجيل الدخول ووقت آخر ظهور
+function getLoginStatusHtml(lastLoginTimestamp) {
+    if (!lastLoginTimestamp) {
+        return `<span class="badge" style="background:#fee2e2; color:#b91c1c;">لم يفعل الحساب ❌</span>`;
+    }
+    const date = new Date(lastLoginTimestamp);
+    const dateString = date.toLocaleDateString('ar-SA') + ' ' + date.toLocaleTimeString('ar-SA');
+    return `<span class="badge" style="background:#dcfce3; color:#166534;">نشط ✅</span><br><small style="color:var(--muted); font-size:10px; display:block; margin-top:4px;">آخر دخول:<br>${dateString}</small>`;
 }
 
 function autoGenerateUser(userFieldId) {
@@ -481,7 +501,7 @@ function syncClassesLayout() {
 
 function selectClassForSheet(clsName) {
     selectedClassFilter = clsName;
-    syncClassesLayout(); // لتحديث اللون
+    syncClassesLayout(); 
     document.getElementById('classSheetCard').style.display = 'block';
     document.getElementById('classSheetTitle').innerHTML = `📋 طلاب: <span style="color:var(--primary)">${clsName}</span>`;
     buildStudentsGrid(clsName);
@@ -580,20 +600,25 @@ function buildTeachersGrid() {
                 let subjectBadge = item.subject ? `<span class="badge">${item.subject}</span>` : '<span class="badge" style="background:#f1f5f9; color:#94a3b8;">بدون مادة</span>';
 
                 const waLink = item.teacherPhone ? getWhatsAppLink(item.teacherPhone, item.teacherName, item.teacherUser, `معلم`) : '#';
-                const waDisplay = item.teacherPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)">💬 إرسال</a>` : '';
+                const waDisplay = item.teacherPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)" style="margin-bottom:4px;">💬 بطاقة الدخول</a>` : '';
+
+                const waReminderLink = item.teacherPhone ? getWhatsAppReminderLink(item.teacherPhone, item.teacherName, `معلم`) : '#';
+                const waReminderDisplay = (item.teacherPhone && !item.lastLogin) ? `<a href="${waReminderLink}" target="_blank" class="btn-whatsapp-send" style="background:#f59e0b;" onclick="markAsSent(this)">🔔 تنبيه تفعيل</a>` : '';
+                const loginStatusDisplay = getLoginStatusHtml(item.lastLogin);
 
                 tbody.innerHTML += `
                     <tr>
                         <td><a class="clickable-name" onclick="openCardModal('${item.teacherName}', 'معلم تخصص: ${item.subject}', '${item.teacherUser}', '${item.teacherPhone}')">👤 ${item.teacherName} 🪪</a></td>
                         <td>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:90px;" value="${item.teacherPhone || ''}" onchange="updateField('assignments', '${key}', 'teacherPhone', this.value)">
-                                ${waDisplay}
+                            <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:100px;" value="${item.teacherPhone || ''}" onchange="updateField('assignments', '${key}', 'teacherPhone', this.value)">
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">${waDisplay} ${waReminderDisplay}</div>
                             </div>
                         </td>
                         <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.teacherUser}" onchange="updateField('assignments', '${key}', 'teacherUser', this.value); updateField('assignments', '${key}', 'teacherPass', this.value)"></td>
                         <td>${subjectBadge}</td>
                         <td><div style="display:flex; flex-wrap:wrap; gap:4px;">${visualBadges}</div></td>
+                        <td>${loginStatusDisplay}</td>
                         <td><button onclick="removeAccount('assignments', '${key}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:700;">حذف بالكامل</button></td>
                     </tr>`;
                 }
@@ -635,25 +660,31 @@ function buildStudentsGrid(clsName) {
             let item = data[key];
             if(item.schoolId === activeSchoolId && item.className === clsName) {
                 count++;
+                
                 const waLink = item.studentPhone ? getWhatsAppLink(item.studentPhone, item.studentName, item.studentUser, `الفصل ${item.className}`) : '#';
-                const waDisplay = item.studentPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)">💬 إرسال</a>` : '';
+                const waDisplay = item.studentPhone ? `<a href="${waLink}" target="_blank" class="btn-whatsapp-send" onclick="markAsSent(this)" style="margin-bottom:4px;">💬 بطاقة الدخول</a>` : '';
+
+                const waReminderLink = item.studentPhone ? getWhatsAppReminderLink(item.studentPhone, item.studentName, `طالب`) : '#';
+                const waReminderDisplay = (item.studentPhone && !item.lastLogin) ? `<a href="${waReminderLink}" target="_blank" class="btn-whatsapp-send" style="background:#f59e0b;" onclick="markAsSent(this)">🔔 تنبيه تفعيل</a>` : '';
+                const loginStatusDisplay = getLoginStatusHtml(item.lastLogin);
 
                 tbody.innerHTML += `
                     <tr>
                         <td><a class="clickable-name" onclick="openCardModal('${item.studentName}', 'الفصل: ${item.className}', '${item.studentUser}', '${item.studentPhone}')">👶 ${item.studentName} 🪪</a></td>
                         <td>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:90px;" value="${item.studentPhone || ''}" onchange="updateField('students', '${key}', 'studentPhone', this.value)">
-                                ${waDisplay}
+                            <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px;">
+                                <input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; width:100px;" value="${item.studentPhone || ''}" onchange="updateField('students', '${key}', 'studentPhone', this.value)">
+                                <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px;">${waDisplay} ${waReminderDisplay}</div>
                             </div>
                         </td>
                         <td><input type="text" class="inp" style="padding:6px; margin:0; font-size:13px; font-family:monospace;" value="${item.studentUser}" onchange="updateField('students', '${key}', 'studentUser', this.value); updateField('students', '${key}', 'studentPass', this.value)"></td>
                         <td><small style="color:var(--success); font-weight:bold;">حفظ تلقائي ✓</small></td>
+                        <td>${loginStatusDisplay}</td>
                         <td><button onclick="removeAccount('students', '${key}', '${item.className}')" style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; font-weight:700;">حذف الطالب</button></td>
                     </tr>`;
             }
         }
-        if(count === 0) tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">لا يوجد طلاب.</td></tr>`;
+        if(count === 0) tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">لا يوجد طلاب.</td></tr>`;
     });
 }
 
@@ -740,7 +771,7 @@ function importStudentsExcel(event) {
             const stData = {
                 studentName: row['اسم الطالب'] || row['الاسم'] || 'طالب مستورد',
                 studentPhone: row['رقم الجوال'] || row['الجوال'] || '',
-                className: selectedClassForImport, // يقرأ من الفصل المختار
+                className: selectedClassForImport, 
                 studentUser: u, studentPass: u, schoolId: activeSchoolId
             };
             database.ref('students').push(stData);
