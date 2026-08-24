@@ -359,18 +359,35 @@ function markAsSent(btn) {
     btn.style.backgroundColor = '#166534'; 
 }
 
+// دالة إرسال بيانات الدخول (باستخدام اسم المستخدم فقط)
 function getWhatsAppLink(phone, name, user, role) {
     const cleanPhone = formatPhoneForWhatsApp(phone);
-    if(!cleanPhone) return '#';
-    const message = `*🎓 سجل الواجبات الإلكتروني*%0A%0Aمرحباً *${name}*،%0Aإليك تفاصيل الدخول الخاصة بك كـ (${role}):%0A%0A*👤 اسم المستخدم:* ${user}%0A*🔑 كلمة المرور:* ${user} (نفس اسم المستخدم)%0A%0Aنتمنى لك توفيقاً دائماً 🌟`;
+    if (!cleanPhone) return '#';
+    
+    const message = `*🎓 سجل الواجبات الإلكتروني*%0A%0A` +
+        `مرحباً *${name}* 👋%0A` +
+        `إليك بيانات الدخول الخاصة بك بصفتك (${role}):%0A%0A` +
+        `👤 *اسم المستخدم:* ${user}%0A` +
+        `💡 *(الدخول يتم باستخدام اسم المستخدم فقط)*%0A%0A` +
+        `🌐 *رابط الدخول للمنصة:*%0A` +
+        `https://usayd-school.github.io/EduTrack/%0A%0A` +
+        `نتمنى لك دوام التوفيق والنجاح 🌟`;
+
     return `https://wa.me/${cleanPhone}?text=${message}`;
 }
 
-// دالة توليد رسالة تنبيه مخصصة للواتساب لمن لم يسجل دخوله
+// دالة إرسال تذكير بتسجيل الدخول (كما هي بدون تغيير)
 function getWhatsAppReminderLink(phone, name, role) {
     const cleanPhone = formatPhoneForWhatsApp(phone);
-    if(!cleanPhone) return '#';
-    const message = `*تنبيه هام 🚨*%0A%0Aمرحباً *${name}*،%0Aنلاحظ أنه لم يتم تفعيل حسابك أو الدخول لمنصة سجل الواجبات الإلكتروني كـ (${role}).%0A%0Aيرجى المبادرة بتسجيل الدخول لتفعيل الحساب ومتابعة المهام.%0Aشكراً لتعاونك!`;
+    if (!cleanPhone) return '#';
+    
+    const message = `*تذكير هام 🚨*%0A%0A` +
+        `مرحباً *${name}* 👋%0A` +
+        `نُحيطك علماً بأن حسابك في منصة (سجل الواجبات الإلكتروني) كـ (${role}) لم يتم تفعيله بتسجيل الدخول بعد.%0A%0A` +
+        `يرجى المبادرة بتسجيل الدخول لمتابعة المهام من خلال الرابط التالي:%0A` +
+        `🌐 https://usayd-school.github.io/EduTrack/%0A%0A` +
+        `شاكرين ومقدرين حسن تعاونك 🌟`;
+
     return `https://wa.me/${cleanPhone}?text=${message}`;
 }
 
