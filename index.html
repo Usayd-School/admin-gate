@@ -359,31 +359,41 @@ function markAsSent(btn) {
     btn.style.backgroundColor = '#166534'; 
 }
 
-// 1. دالة إرسال بيانات الدخول (ذكية تفرق بين المعلم والطالب)
+// 1. دالة إرسال بيانات الدخول (محدثة لدعم الروابط المخصصة والتفاصيل الجديدة)
 function getWhatsAppLink(phone, name, user, role) {
     const cleanPhone = formatPhoneForWhatsApp(phone);
     if (!cleanPhone) return '#';
     
-    // تحديد النص المناسب بناءً على الدور الممرر
-    let welcomeText = "";
+    let message = "";
+    
     if (role === "معلم" || role === "معلمة") {
-        welcomeText = `تم إنشاء حساب لك في سجل الواجبات الإلكتروني بصفتك (${role}).`;
+        message = `*🎓 سجل الواجبات الإلكتروني*%0A%0A` +
+            `مرحباً بك أستاذنا الفاضل: *${name}* 👋%0A` +
+            `تم تفعيل حسابك كـ (${role}) بنجاح.%0A%0A` +
+            `*💡 تتيح لك المنصة:*%0A` +
+            `📝 إرسال وتوثيق الواجبات اليومية.%0A` +
+            `📈 متابعة وتقييم مستوى الطلاب.%0A%0A` +
+            `👤 *اسم المستخدم:* ${user}%0A` +
+            `🔑 *(الدخول يتم باستخدام اسم المستخدم ككلمة مرور افتراضية)*%0A%0A` +
+            `🌐 *رابط الدخول الخاص بالمعلمين:*%0A` +
+            `https://usayd-school.github.io/teacher-gate%0A%0A` +
+            `نتمنى لك دوام التوفيق والنجاح 🌟`;
     } else {
-        // إذا كان الممرر هو اسم الفصل (مثل: "الفصل A" أو "1/أ")
         let studentRole = role.includes("فصل") || role.includes("صف") ? role : `فصل ${role}`;
-        if (role === "طالب") studentRole = role; // في حال تم تمرير كلمة "طالب" فقط
+        if (role === "طالب") studentRole = role;
         
-        welcomeText = `تم إنشاء حساب لك في سجل الطلاب الإلكتروني كطالب في (${studentRole}).`;
+        message = `*🎓 سجل الواجبات الإلكتروني*%0A%0A` +
+            `مرحباً بك ولي أمر الطالب: *${name}* 👋%0A` +
+            `تم تفعيل حسابكم لمتابعة ابنكم في (${studentRole}).%0A%0A` +
+            `*💡 تتيح لكم المنصة:*%0A` +
+            `📚 الاطلاع على الواجبات اليومية.%0A` +
+            `📊 متابعة التقييم المستمر لمستوى الطالب.%0A%0A` +
+            `👤 *اسم المستخدم:* ${user}%0A` +
+            `🔑 *(الدخول يتم باستخدام اسم المستخدم ككلمة مرور افتراضية)*%0A%0A` +
+            `🌐 *رابط الدخول الخاص بأولياء الأمور والطلاب:*%0A` +
+            `https://usayd-school.github.io/student-view/%0A%0A` +
+            `نتمنى لك دوام التوفيق والنجاح 🌟`;
     }
-
-    const message = `*🎓 سجل الواجبات الإلكتروني*%0A%0A` +
-        `مرحباً *${name}* 👋%0A` +
-        `${welcomeText}%0A%0A` +
-        `👤 *اسم المستخدم:* ${user}%0A` +
-        `💡 *(الدخول يتم باستخدام اسم المستخدم فقط)*%0A%0A` +
-        `🌐 *رابط الدخول للمنصة:*%0A` +
-        `https://usayd-school.github.io/EduTrack/%0A%0A` +
-        `نتمنى لك دوام التوفيق والنجاح 🌟`;
 
     return `https://wa.me/${cleanPhone}?text=${message}`;
 }
@@ -393,22 +403,24 @@ function getWhatsAppReminderLink(phone, name, role) {
     const cleanPhone = formatPhoneForWhatsApp(phone);
     if (!cleanPhone) return '#';
     
-    // تخصيص نص التذكير أيضاً
     let accountDescription = "";
+    let gateLink = "";
     if (role === "معلم" || role === "معلمة") {
         accountDescription = `حسابك كـ (${role}) في سجل الواجبات الإلكتروني`;
+        gateLink = "https://usayd-school.github.io/teacher-gate";
     } else {
         let studentRole = role.includes("فصل") || role.includes("صف") ? role : `فصل ${role}`;
         if (role === "طالب") studentRole = role;
         
-        accountDescription = `حسابك كطالب في (${studentRole}) في سجل الطلاب الإلكتروني`;
+        accountDescription = `حسابك كطالب في (${studentRole}) في سجل الواجبات الإلكتروني`;
+        gateLink = "https://usayd-school.github.io/student-view/";
     }
 
     const message = `*تذكير هام 🚨*%0A%0A` +
         `مرحباً *${name}* 👋%0A` +
         `نُحيطك علماً بأنه لم يتم تفعيل ${accountDescription} بتسجيل الدخول حتى الآن.%0A%0A` +
         `يرجى المبادرة بتسجيل الدخول لمتابعة المهام عبر الرابط التالي:%0A` +
-        `🌐 https://usayd-school.github.io/EduTrack/%0A%0A` +
+        `🌐 ${gateLink}%0A%0A` +
         `شاكرين ومقدرين حسن تعاونك 🌟`;
 
     return `https://wa.me/${cleanPhone}?text=${message}`;
